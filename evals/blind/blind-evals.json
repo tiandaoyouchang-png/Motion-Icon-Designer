@@ -1,0 +1,55 @@
+{
+"suite": "design-motion-icons-blind",
+"cases": [
+{
+"id": "BLIND-01",
+"name": "rain-sensor",
+"prompt": "设计一个车机雨量传感器动态图标，雨越大反馈越明显。"
+},
+{
+"id": "BLIND-02",
+"name": "auto-hold",
+"prompt": "做个 Auto Hold 开启和关闭的动态图标。"
+},
+{
+"id": "BLIND-03",
+"name": "lane-centering",
+"prompt": "设计一个车道居中辅助动态图标。"
+},
+{
+"id": "BLIND-04",
+"name": "parking-radar",
+"prompt": "倒车雷达 icon 怎么动态表现不同距离？"
+},
+{
+"id": "BLIND-05",
+"name": "auto-headlight",
+"prompt": "自动大灯开关 icon 怎么做动效比较高级？"
+},
+{
+"id": "BLIND-06",
+"name": "air-suspension",
+"prompt": "空气悬架有低、中、高三档，动态图标怎么设计？"
+},
+{
+"id": "BLIND-07",
+"name": "child-lock",
+"prompt": "儿童锁开关做一个动态 icon。"
+},
+{
+"id": "BLIND-08",
+"name": "mirror-heating",
+"prompt": "后视镜加热图标和座椅加热怎么做成一套又不重复？"
+},
+{
+"id": "BLIND-09",
+"name": "wireless-charging",
+"prompt": "无线充电板 icon 怎么做动态状态？"
+},
+{
+"id": "BLIND-10",
+"name": "vehicle-locator",
+"prompt": "Find My Car / 寻车图标怎么动？"
+}
+]
+}

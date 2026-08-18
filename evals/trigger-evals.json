@@ -1,0 +1,27 @@
+{
+"skill": "design-motion-icons",
+"positive": [
+"帮我把这个座椅加热图标设计成三档动效",
+"这个 SVG 铃铛 hover 时应该怎么动？",
+"做一个 lock 到 unlock 的图标 morph",
+"帮我设计车机 fan icon 的动态状态",
+"这个 Lottie icon 太花了，帮我评审",
+"我要做一套 HMI motion icon design system",
+"Play 和 Pause 怎么做状态切换？",
+"把 Wi-Fi SVG 变成语义动态图标",
+"Rive 里座椅通风图标怎么设计状态",
+"检查这套 icon animation 有没有过度动画"
+],
+"negative": [
+"给网站做 Hero 入场动画",
+"做网页滚动视差",
+"帮我做视频生成 prompt",
+"让人物从椅子上站起来",
+"做一个整页 loading 页面",
+"设计页面切换 transition",
+"dashboard 卡片 stagger entrance",
+"画一套静态 icon",
+"推荐几个 icon library",
+"做品牌宣传片动效"
+]
+}

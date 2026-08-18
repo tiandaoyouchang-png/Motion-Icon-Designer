@@ -1,0 +1,17 @@
+<!doctype html><meta charset="utf-8"><title>Lock Motion Icon</title>
+<style>body{display:grid;place-items:center;height:100vh;margin:0}.icon{width:96px;height:96px}.line{fill:none;stroke:#111;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}</style>
+<svg class="icon" data-motion-icon viewBox="0 0 24 24" aria-label="Lock">
+  <rect class="line" x="5" y="10" width="14" height="10" rx="2"/>
+  <path class="line" data-shackle d="M8 10V7a4 4 0 0 1 8 0v3"/>
+</svg>
+<script>
+const shackle=document.querySelector('[data-shackle]');let current='locked',from=0,target=1,reduced=false,visual=0;
+function value(v){return v==='unlocked'?1:0}function state(v){return v>=.5?'unlocked':'locked'}
+function render(v){visual=v;shackle.style.transformOrigin='16px 10px';shackle.style.transform=`rotate(${v*32}deg) translateX(${v*1.5}px)`}
+function setState(v){current=v;from=value(v);target=from;render(from)}function beginTransition(v){from=visual;target=value(v)}
+function seek(p){const q=reduced&&p>0?1:p;render(from+(target-from)*q);if(q>=1)current=state(target)}
+function reset(){reduced=false;setState('locked');beginTransition('unlocked')}
+window.__motionIconTest={setState,beginTransition,seek,setReducedMotion:v=>reduced=!!v,getState:()=>({current,visual}),getTestScenarios:()=>[
+{name:'reverse-to-locked',start:'locked',firstTarget:'unlocked',interruptAt:.5,secondTarget:'locked',expected:'locked'},
+{name:'reverse-to-unlocked',start:'unlocked',firstTarget:'locked',interruptAt:.5,secondTarget:'unlocked',expected:'unlocked'}],reset};reset();
+</script>

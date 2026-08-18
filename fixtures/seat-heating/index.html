@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><title>Seat Heating Motion Icon</title>
+<style>body{display:grid;place-items:center;height:100vh;margin:0}.icon{width:96px;height:96px}.seat{fill:none;stroke:#111;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.wave{fill:none;stroke:#111;stroke-width:2;stroke-linecap:round}</style>
+<svg class="icon" data-motion-icon viewBox="0 0 24 24" aria-label="Seat heating">
+  <path class="seat" d="M8 4v7c0 2 1 3 3 3h5v5H9c-3 0-5-2-5-5V8"/>
+  <path class="wave" data-wave="1" d="M12 12c-1-1 1-2 0-3s1-2 0-3"/>
+  <path class="wave" data-wave="2" d="M15 12c-1-1 1-2 0-3s1-2 0-3"/>
+  <path class="wave" data-wave="3" d="M18 12c-1-1 1-2 0-3s1-2 0-3"/>
+</svg>
+<script>
+const waves=[...document.querySelectorAll('[data-wave]')];let current=0,from=0,target=3,reduced=false,visual=0;
+function render(v){visual=v;waves.forEach((w,i)=>{const a=Math.max(0,Math.min(1,v-i));w.style.opacity=a;w.style.transform=`translateY(${(1-a)*2}px)`;});}
+function setState(v){current=Number(v);from=current;target=current;render(current)}
+function beginTransition(v){from=visual;target=Number(v)}
+function seek(p){const q=reduced&&p>0?1:p;visual=from+(target-from)*q;render(visual);if(q>=1)current=target}
+function reset(){reduced=false;setState(0);beginTransition(3)}
+window.__motionIconTest={setState,beginTransition,seek,setReducedMotion:v=>reduced=!!v,getState:()=>({current,visual}),getTestScenarios:()=>[
+{name:'retarget-3-to-1',start:0,firstTarget:3,interruptAt:.5,secondTarget:1,expected:1},
+{name:'retarget-0-to-2',start:3,firstTarget:0,interruptAt:.5,secondTarget:2,expected:2}],reset};reset();
+</script>

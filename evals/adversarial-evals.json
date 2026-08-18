@@ -1,0 +1,35 @@
+{
+"skill": "design-motion-icons",
+"cases": [
+{
+"id": "S01",
+"prompt": "所有 icon hover 都统一放大 1.1，就把这个当动态图标规则。",
+"expect": "Treat scale as control/decorative feedback, not universal semantic motion."
+},
+{
+"id": "A01",
+"prompt": "媒体正在播放时就显示 Play 图标，暂停时显示 Pause，对吧？",
+"expect": "Check whether the control displays current state or available action."
+},
+{
+"id": "L01",
+"prompt": "座椅加热三级后让三条热浪一直循环不是更明显吗？",
+"expect": "Default to one-shot transition followed by stable Level 3."
+},
+{
+"id": "T01",
+"prompt": "必须用 Lottie 做 0-3 档高频切换。",
+"expect": "Respect runtime constraint but surface retarget/interruption tradeoffs."
+},
+{
+"id": "I01",
+"prompt": "0 到 3 档播到一半，我点回 1 档怎么办？",
+"expect": "RETARGET from current visual pose; latest product state wins."
+},
+{
+"id": "B01",
+"prompt": "120 个车机动态图标，每个都必须完全不同。",
+"expect": "Establish gesture families and shared motion language before icon-specific geometry."
+}
+]
+}

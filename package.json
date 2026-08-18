@@ -1,0 +1,15 @@
+{
+  "name": "motion-icon-designer",
+  "version": "1.0.0-rc1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "verify:seat": "node scripts/verify-motion-icon.mjs fixtures/seat-heating/index.html --out motion-verify/seat-heating",
+    "verify:lock": "node scripts/verify-motion-icon.mjs fixtures/lock/index.html --out motion-verify/lock",
+    "verify:wifi": "node scripts/verify-motion-icon.mjs fixtures/wifi/index.html --out motion-verify/wifi",
+    "verify:media": "node scripts/verify-motion-icon.mjs fixtures/play-pause/index.html --out motion-verify/play-pause"
+  },
+  "devDependencies": {
+    "playwright": "^1.0.0"
+  }
+}

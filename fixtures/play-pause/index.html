@@ -1,0 +1,17 @@
+<!doctype html><meta charset="utf-8"><title>Play Pause Motion Icon</title>
+<style>body{display:grid;place-items:center;height:100vh;margin:0}.icon{width:96px;height:96px}.glyph{fill:#111}</style>
+<svg class="icon" data-motion-icon viewBox="0 0 24 24" aria-label="Play pause control">
+  <path class="glyph" data-play d="M8 5l11 7-11 7z"/>
+  <g class="glyph" data-pause><rect x="7" y="5" width="4" height="14" rx="1"/><rect x="13" y="5" width="4" height="14" rx="1"/></g>
+</svg>
+<script>
+const play=document.querySelector('[data-play]'),pause=document.querySelector('[data-pause]');let current='paused',from=0,target=1,reduced=false,visual=0;
+function value(v){return v==='playing'?1:0}function state(v){return v>=.5?'playing':'paused'}
+function render(v){visual=v;play.style.opacity=1-v;pause.style.opacity=v;play.style.transformOrigin='12px 12px';pause.style.transformOrigin='12px 12px';play.style.transform=`scale(${1-v*.08})`;pause.style.transform=`scale(${.92+v*.08})`}
+function setState(v){current=v;from=value(v);target=from;render(from)}function beginTransition(v){from=visual;target=value(v)}
+function seek(p){const q=reduced&&p>0?1:p;render(from+(target-from)*q);if(q>=1)current=state(target)}
+function reset(){reduced=false;setState('paused');beginTransition('playing')}
+window.__motionIconTest={setState,beginTransition,seek,setReducedMotion:v=>reduced=!!v,getState:()=>({current,visual}),getTestScenarios:()=>[
+{name:'rapid-pause',start:'paused',firstTarget:'playing',interruptAt:.5,secondTarget:'paused',expected:'paused'},
+{name:'rapid-play',start:'playing',firstTarget:'paused',interruptAt:.5,secondTarget:'playing',expected:'playing'}],reset};reset();
+</script>

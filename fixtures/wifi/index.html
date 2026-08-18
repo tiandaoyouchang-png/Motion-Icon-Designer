@@ -1,0 +1,18 @@
+<!doctype html><meta charset="utf-8"><title>Wi-Fi Motion Icon</title>
+<style>body{display:grid;place-items:center;height:100vh;margin:0}.icon{width:96px;height:96px}.arc{fill:none;stroke:#111;stroke-width:2;stroke-linecap:round}.dot{fill:#111}</style>
+<svg class="icon" data-motion-icon viewBox="0 0 24 24" aria-label="Wi-Fi signal">
+  <path class="arc" data-band="3" d="M4 9a12 12 0 0 1 16 0"/>
+  <path class="arc" data-band="2" d="M7 12a8 8 0 0 1 10 0"/>
+  <path class="arc" data-band="1" d="M10 15a4 4 0 0 1 4 0"/>
+  <circle class="dot" cx="12" cy="18" r="1"/>
+</svg>
+<script>
+const bands=[...document.querySelectorAll('[data-band]')];let current=0,from=0,target=3,reduced=false,visual=0;
+function render(v){visual=v;bands.forEach(b=>{const level=Number(b.dataset.band);const a=Math.max(0,Math.min(1,v-level+1));b.style.opacity=a;});}
+function setState(v){current=Number(v);from=current;target=current;render(current)}function beginTransition(v){from=visual;target=Number(v)}
+function seek(p){const q=reduced&&p>0?1:p;render(from+(target-from)*q);if(q>=1)current=target}
+function reset(){reduced=false;setState(0);beginTransition(3)}
+window.__motionIconTest={setState,beginTransition,seek,setReducedMotion:v=>reduced=!!v,getState:()=>({current,visual}),getTestScenarios:()=>[
+{name:'retarget-strength',start:0,firstTarget:3,interruptAt:.5,secondTarget:1,expected:1},
+{name:'retarget-up',start:3,firstTarget:0,interruptAt:.5,secondTarget:2,expected:2}],reset};reset();
+</script>
