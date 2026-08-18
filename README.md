@@ -1,12 +1,18 @@
 # Motion Icon Designer
 
-**Motion Icon Designer** 是一套以 **Product State（产品状态）** 为起点的语义动态图标设计工作流，用于设计、评审、实现、交付和验证产品界面中的动态图标与图标微交互。
+**Motion Icon Designer** 是一套以 **Product State（产品状态）** 为起点的语义动态图标设计与量产执行工作流。
 
-它适用于 UI、车载 HMI、移动端、Web 和嵌入式界面，核心目标不是“让图标动起来”，而是让运动准确表达产品状态、功能含义和交互反馈。
+它不仅用于“想动效”，还负责把产品状态、SVG 几何、语义动作、动效语言和平台约束收敛成可执行的 **SVG + WAAPI** 量产候选，并生成自动验证报告与标准交付包。
 
 Skill 名称：
 
 `design-motion-icons`
+
+当前版本：
+
+`1.0.0-rc2`
+
+> RC2 的量产 backend **只承诺 SVG + WAAPI**。Lottie / dotLottie / Rive 目前保留为设计交付与实验性 backend，不应标记为 production PASS。
 
 ## 核心模型
 
@@ -18,172 +24,361 @@ Skill 名称：
 → 手势家族 Gesture Family
 → 响应方式 Reactivity
 → 动效语言 Motion Language
-→ 中断策略 Interrupt Policy
-→ 规范契约 Canonical Contract
-→ 运行时 Runtime
-→ 验证 Verification
+→ Canonical Contract
+→ Platform Capability
+→ Build
+→ Verification
+→ Production Package
 ```
 
-## 适用场景
+## 为什么不是“给图标加动画”
 
-- UI 动态图标设计
-- 车载 HMI Motion Icon
-- 图标状态切换与状态 Morph
-- SVG / WAAPI 图标动画
-- Lottie / dotLottie 动效设计与交付
-- Rive 状态机与数据驱动态图标
-- Motion Icon Design System
-- 图标动效评审与问题诊断
-- 开发交付规范
-- Motion QA 与交互验证
-
-## 核心原则
-
-### 1. 产品状态优先
-
-先定义产品真实状态，再定义动画。
+量产动态图标首先要保证产品事实正确：
 
 ```text
 产品 / 车辆 / 设备状态
-→ Motion Adapter
-→ Animation Runtime
+→ Motion Contract
+→ Runtime Controller
+→ Visual State
 ```
 
-动画运行时不应该反过来成为业务状态的来源。
+动画运行时不能反过来成为业务状态来源。
 
-### 2. 控件反馈 ≠ 图标语义动效
+必须区分：
 
-按钮按下时可以缩放、发光或产生触感反馈，但这些属于 **Control Feedback**。
-
-图标内部真正表达产品状态变化的运动属于 **Semantic Icon Motion**。
-
-两者可以同时存在，但不能互相替代。
-
-### 3. Transition ≠ Persistent State
-
-一次状态切换动画结束后，图标必须稳定落在正确的目标状态。
-
-例如座椅加热从 0 档切到 3 档：
-
-- Transition：三档热量逐步建立
-- Persistent State：三档指示保持可见并稳定
-- 默认不应该让进入动画无限循环
-
-### 4. 最新产品状态优先
-
-对于高频交互、档位切换或连续值控制，优先采用 **RETARGET**。
-
-如果动画尚未结束时用户再次操作，应从当前视觉状态继续朝最新目标过渡，而不是让过期动画覆盖最新产品状态。
-
-## 语义手势家族
-
-Motion Icon Designer 使用可复用的语义运动语法，而不是为所有图标复制同一套 keyframe。
-
-当前包含的主要 Gesture Family：
-
-- Trace / Reveal：描边、路径、完成过程
-- Directional Travel：上传、下载、发送、导航
-- Pivot / Hinge：锁扣、门、盖板、杠杆
-- Separate / Rejoin：插头、连接、解耦
-- Arrive / Settle：到达与落位
-- Fill / Level：电量、液位、数值等级
-- Emit / Radiate：信号、热量、声音、光线、雷达
-- Step / Increment：离散档位与等级
-- Functional Rotation：风扇、刷新、罗盘等具有真实旋转语义的对象
-- Contents in Frame：容器稳定、内部内容变化
-- Reshape：材料或形态真正发生变化
-- State Morph：Play / Pause、Menu / Close 等结构状态切换
-
-## 支持的实现路径
-
-### SVG + CSS / WAAPI
-
-适合：
-
-- transform / opacity
-- stroke reveal
-- 简单 morph
-- Web UI
-- 需要确定性浏览器测试的场景
-
-建议按语义拆分 SVG 分组，例如：
-
-```html
-<g data-part="shackle">...</g>
+```text
+Control Feedback ≠ Semantic Icon Motion
+Transition ≠ Persistent State
+Product State ≠ Animation State
+Current State ≠ Available Action
+Platform Constraint ≠ Product Semantics
+Captured Screenshot ≠ Verified Screenshot
 ```
 
-避免依赖 `path:nth-child(...)` 之类脆弱选择器。
+## RC2 新增：端到端 SVG + WAAPI 量产管线
 
-### Lottie / dotLottie
+RC1 主要解决“如何正确设计、交付和验证动态图标”。
 
-适合设计师主导的多图层时间线编排和可移植矢量动画。
+RC2 增加真正的执行层：
 
-在真实产品中需要额外确认目标运行时是否支持 marker、segment、interactivity 或 state-machine 能力。
+```text
+Source SVG
++
+Product State / Motion Contract
++
+Platform Profile
+↓
+Asset Preflight
+↓
+SVG Normalization
+↓
+SVG + WAAPI Compile
+↓
+Runtime Verification
+↓
+Production Package
+```
 
-### Rive
+### 1. Canonical Contract Schema
 
-适合：
+正式 contract 定义在：
 
-- 多状态交互图标
-- 实时参数
-- 高频 RETARGET
-- 连续值映射
-- 数据驱动状态机
+```text
+schemas/motion-icon-contract.schema.json
+```
 
-业务层应传递产品事实，例如：
+contract 必须包含：
+
+- 产品输入模型与 source of truth
+- allowed states / initial state
+- representation role
+- semantic verb / gesture family
+- stable parts / actors
+- persistent visual states
+- transition tracks
+- interrupt policy
+- reduced motion
+- runtime / platform profile
+- verification scenarios
+
+### 2. Asset Preflight
+
+```bash
+node scripts/asset-preflight.mjs icon.svg \
+  --profile profiles/web-svg-waapi.json \
+  --mode intake \
+  --out preflight.json
+```
+
+默认会检查：
+
+- viewBox
+- SVG 大小
+- scripts / foreignObject / embedded raster 等阻断元素
+- 外部引用
+- inline event handler
+- duplicate IDs
+- broken internal references
+- `data-part` 语义标注
+
+不安全资产会直接进入 `BLOCKED`，而不是继续生成一个“看起来能跑”的错误结果。
+
+### 3. SVG Normalizer
+
+```bash
+node scripts/svg-normalizer.mjs annotated.svg \
+  --out normalized.svg \
+  --id-prefix my-icon
+```
+
+主要负责：
+
+- 添加 `[data-motion-icon]`
+- 补齐 SVG namespace
+- 确定性 ID 前缀
+- 同步重写 `url(#id)` / `href="#id"`
+- 保留 `data-part`
+- 输出 normalization report
+
+### 4. SVG + WAAPI Compiler
+
+```bash
+node scripts/svg-waapi-compiler.mjs \
+  --svg normalized.svg \
+  --contract contract.json \
+  --profile profiles/web-svg-waapi.json \
+  --out production-package
+```
+
+compiler 会检查 contract 和 SVG 的 semantic part 是否一致，然后生成 runtime controller、fixture、manifest 和编译报告。
+
+### 5. 一键 Build
+
+```bash
+node scripts/build-motion-icon.mjs \
+  --svg annotated.svg \
+  --contract contract.json \
+  --profile profiles/web-svg-waapi.json \
+  --out production-package
+```
+
+默认流程会执行：
+
+```text
+preflight
+→ contract validation
+→ normalization
+→ build-mode preflight
+→ compile
+→ runtime verification
+```
+
+任何 P0 gate 失败都会停止构建。
+
+## Verifier v2
+
+```bash
+node scripts/verify-motion-icon.mjs production-package \
+  --out production-package
+```
+
+Verifier v2 不再只是截图工具。
+
+它会检查：
+
+- 单一 `[data-motion-icon]` root
+- duplicate SVG IDs
+- external references
+- contract / asset semantic parts
+- stable-part geometry invariant
+- 20 / 24 / 32 / 96px 实际尺寸
+- 0 / 10 / 25 / 50 / 75 / 90 / 100% 中间帧
+- final landing
+- RETARGET / rapid interaction
+- latest product state wins
+- reduced motion target meaning
+- browser console / page / request failures
+- 可选的 pinned-environment screenshot hash baseline
+
+验证完成后：
+
+```json
+{
+  "verification": {
+    "status": "PASS"
+  }
+}
+```
+
+会写入 `manifest.json`。
+
+**没有 PASS，不应宣称量产可用。**
+
+## 标准 Production Package
+
+```text
+production-package/
+├── source.svg
+├── motion-icon.svg
+├── controller.js
+├── contract.json
+├── platform-profile.json
+├── manifest.json
+├── preflight-report.json
+├── normalize-report.json
+├── compile-report.json
+├── fixture.html
+├── verify-report.json
+├── verify-report.html
+├── screenshots/
+└── README.md
+```
+
+开发拿到的是一套可追溯、可运行、可验证的交付物，而不是几段零散代码。
+
+## Runtime API
+
+生成的 SVG + WAAPI controller 使用产品状态 API：
 
 ```js
-setState({ heatLevel: 3 })
+const api = MotionIconRuntime.create(root, contract)
+
+api.setState("locked")
+api.beginTransition("unlocked")
+api.setReducedMotion(true)
 ```
 
 而不是：
 
 ```js
-playAnimation("Level3")
+playAnimation("UnlockClip")
 ```
 
-## 安装与开发
+业务代码表达产品事实，motion layer 负责视觉插值。
 
-安装依赖：
+## RETARGET
+
+用户在动画中途再次操作时：
+
+```text
+旧目标
+× 不应该继续赢
+
+当前视觉姿态
+→ 最新产品目标
+```
+
+RC2 controller 会从当前视觉姿态重新建立目标过渡；Reduced Motion 开启时则直接建立最新目标状态。
+
+## Platform Capability Profile
+
+默认 profile：
+
+```text
+profiles/web-svg-waapi.json
+```
+
+它定义：
+
+- runtime
+- SVG allowlist / blocklist
+- external reference policy
+- asset size 上限
+- duration 上限
+- overshoot 上限
+- stable geometry tolerance
+- 验证尺寸
+
+量产设计不是：
+
+```text
+Motion Design → 强行塞进 Runtime
+```
+
+而是：
+
+```text
+Product Semantics
++
+Platform Capability
+→ Feasible Motion Build
+```
+
+## 运行 RC2 端到端样例
+
+仓库提供：
+
+```text
+fixtures/production-lock/
+├── source.svg
+└── contract.json
+```
+
+执行：
 
 ```bash
-npm install
-npx playwright install chromium
+npm run build:production-lock
 ```
 
-运行座椅加热 fixture：
+或者只跑非浏览器 gate：
+
+```bash
+npm run test:static
+npm run test:production
+```
+
+现有四个 RC1 fixture 仍保留用于兼容性验证：
 
 ```bash
 npm run verify:seat
-```
-
-运行其他 fixture：
-
-```bash
 npm run verify:lock
 npm run verify:wifi
 npm run verify:media
 ```
 
-## 验证体系
+## 浏览器依赖
 
-验证不仅检查动画“看起来顺不顺”，还检查：
+Verifier 优先使用 Playwright Chromium；如果 Playwright 不存在，也可以尝试系统 Chromium 的 CDP fallback。
 
-- 产品状态是否正确
-- 当前状态与可执行动作是否混淆
-- 最终落点是否准确
-- 中间帧是否仍可识别
-- 快速连续操作是否出现卡死
-- RETARGET 是否连续
-- Reduced Motion 是否仍保留状态含义
-- 多实例 SVG 是否发生 ID / mask / clipPath 冲突
-- 最新产品状态是否始终胜出
-
-可运行实现可以使用：
+标准 CI 建议：
 
 ```bash
-node scripts/verify-motion-icon.mjs <fixture.html> --out <output-directory>
+npm install --no-audit --no-fund
+npx playwright install --with-deps chromium
+npm run test:production
 ```
+
+## Hard Blockers
+
+以下情况应停止或降级，而不是继续“生成”：
+
+- `NEEDS_PRODUCT_MODEL`
+- `CONTRACT_CONFLICT`
+- `NO_INTERNAL_SEMANTIC_MOTION`
+- `ASSET_NORMALIZATION_REQUIRED`
+- `RUNTIME_UNSUPPORTED`
+- `BUILD_BLOCKED`
+- `VERIFY_FAILED`
+
+能正确拒绝不可靠输入，是量产能力的一部分。
+
+## Release Gate
+
+详见：
+
+```text
+evals/RELEASE-GATE.md
+```
+
+正式 `1.0.0` 必须同时通过：
+
+- 语义 / Product State Gate
+- Contract / Build Gate
+- Runtime / Interaction Gate
+- Geometry / Visual Gate
+- Packaging / Delivery Gate
+
+Skill validator 通过并不等于 production-ready。
 
 ## 仓库结构
 
@@ -191,63 +386,47 @@ node scripts/verify-motion-icon.mjs <fixture.html> --out <output-directory>
 Motion-Icon-Designer/
 ├── SKILL.md
 ├── README.md
-├── LICENSE
-├── package.json
+├── schemas/
+│   └── motion-icon-contract.schema.json
+├── profiles/
+│   └── web-svg-waapi.json
 ├── agents/
 │   └── openai.yaml
 ├── references/
-│   ├── PRODUCT-STATES.md
-│   ├── GESTURE-FAMILIES.md
-│   ├── MOTION-LANGUAGE.md
-│   ├── IMPLEMENTATION.md
-│   ├── DEVELOPER-HANDOFF.md
-│   ├── VERIFICATION.md
-│   ├── HMI-GOLDEN-SUITE.md
-│   ├── FAILURE-CATALOG.md
-│   └── OUTPUT-SPEC.md
 ├── scripts/
+│   ├── asset-preflight.mjs
+│   ├── svg-normalizer.mjs
+│   ├── svg-waapi-compiler.mjs
+│   ├── build-motion-icon.mjs
 │   ├── verify-motion-icon.mjs
+│   ├── browser-driver.mjs
+│   ├── runtime/
 │   └── adapters/
 ├── fixtures/
+│   ├── production-lock/
 │   ├── seat-heating/
 │   ├── lock/
 │   ├── wifi/
 │   └── play-pause/
 └── evals/
-    ├── trigger-evals.json
-    ├── adversarial-evals.json
-    ├── blind/
-    └── RELEASE-GATE.md
 ```
-
-## 当前版本
-
-`1.0.0-rc1`
-
-只有在 Release Gate 全部通过后，RC 才应升级为正式 `1.0.0`。
-
-关键发布阻断项包括：
-
-- 产品状态错误
-- 状态 / 动作语义错误
-- 过期动画覆盖最新状态
-- Reduced Motion 导致关键含义消失
-- 高频交互产生卡死或错误落点
 
 ## 设计来源与参考
 
 本工作流参考了公开的 Motion Design 与 Semantic SVG Animation 实践，包括 SoraLabsOSS `animating-icons` 与 LottieFiles `motion-design-skill` 等项目。
 
-本仓库进一步形成了以 Product State 为核心的 Motion Icon Designer 方法，包括：
+Motion Icon Designer 在此基础上重点建立：
 
-- HMI 产品状态层
-- Gesture Family 语义语法
-- Motion Language
-- Canonical Developer Contract
-- SVG / Lottie / Rive Runtime Routing
-- RETARGET 中断策略
-- Golden Suite / Blind Eval
-- 自动化 Verification
+- Product State first
+- HMI state semantics
+- Gesture Family
+- Canonical Contract
+- Platform Capability Profile
+- SVG + WAAPI compiler
+- RETARGET runtime
+- Automated Verification
+- Production Package
+- Golden / Adversarial / Blind Eval
 
 ## License
 

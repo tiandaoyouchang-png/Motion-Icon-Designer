@@ -1,86 +1,82 @@
+# Motion Icon Verification v2
 
-# Motion Icon Verification
+Do not judge only from a looping preview or screenshot contact sheet.
 
-Do not judge only from a looping preview.
+A production candidate must prove semantic, contract, runtime, geometry, interaction, accessibility, and packaging correctness.
 
-# V1 Semantic Test
+Run:
 
-Does movement belong to the represented object/signal?
+```bash
+node scripts/verify-motion-icon.mjs production-package \
+  --out production-package
+```
 
-If identical keyframes transfer unchanged to an unrelated icon, review the
-semantic design.
-
-# V2 Product State Test
-
-Verify:
-
-source state is correct
-target state is correct
-persistent target remains correct
-
-# V3 Representation Test
-
-Is the icon showing:
-
-- status
-- action
-- mode
-- value
-- progress
-- alert
-
-correctly?
-
-# V4 Rest / Landing Test
+## Gate A — Product and contract correctness
 
 Verify:
 
-- position
-- scale
-- rotation
-- stroke
-- fill
-- opacity
-- clipping
-- target geometry
+- source/target states are valid
+- representation role is correct
+- persistent target exists
+- current state is not confused with available action
+- product state remains authoritative
+- contract validates against the platform profile
 
-# V5 Intermediate Frame Test
+P0 failure examples:
 
-Sample key moments.
+- wrong product state
+- wrong state/action semantics
+- missing persistent visual state
+- runtime becomes business-state authority
+
+## Gate B — Asset and DOM correctness
+
+Verify:
+
+- exactly one `[data-motion-icon]` root
+- valid/stable viewBox
+- no duplicate SVG IDs
+- no blocked external references
+- no unexpected root transform
+- every contract actor/stable part exists as `data-part`
+- finite root bounds
+- source asset passed preflight
+
+## Gate C — Runtime and interaction correctness
+
+Verify:
+
+- no browser page errors
+- no failed runtime resources
+- no unhandled console errors
+- final state equals latest requested product state
+- animation is settled after seek/landing
+- rapid input does not leave a stuck intermediate state
+- RETARGET/REVERSE reaches the latest requested state
+- missing/obsolete transition never beats current product state
+
+Interrupt at representative points such as 25%, 50%, and 75% when the icon's risk profile requires it.
+
+## Gate D — Geometry and actual-size correctness
+
+Capture representative frames at intended sizes, commonly:
+
+- 20px
+- 24px
+- 32px
+- 96px inspection size
 
 Check:
 
-- recognizability
-- collisions
-- broken silhouettes
-- morph midpoint
-- hidden swaps
-- peak deformation
+- stable parts remain within configured geometry tolerance
+- semantic actor movement follows the correct pivot/emitter/seam
+- silhouettes remain recognizable
+- no clipping or unexpected root-bound expansion
+- target geometry lands exactly
 
-# V6 Motion Test
+Verifier v2 automatically checks configured stable-part bounds when `getVisualState()` and a production contract are available.
 
-Check:
-
-- bad pivot
-- abrupt reset
-- excessive speed
-- accidental pause
-- unnecessary bounce
-- clipping
-- shimmer
-
-# V7 Duplicate Instance Test
-
-Check:
-
-- SVG ID collisions
-- clipPath collisions
-- masks
-- gradients
-- filters
-- shared runtime state
-
-# V8 Reduced Motion Test
+## Gate E — Reduced motion
 
 State meaning must survive.
 
@@ -91,71 +87,58 @@ Reduced motion may:
 - switch directly to target
 - use a restrained transition
 
-It must not erase target state.
+It must not erase the target state. Every allowed state should remain establishable with reduced motion enabled.
 
-# V9 Actual Size Test
+## Gate F — Visual regression
 
-Review at intended sizes.
+Screenshots are evidence, not validation by themselves.
 
-Common:
+Verifier v2 can write and compare exact screenshot hashes:
 
-20px
-24px
-32px
+```bash
+node scripts/verify-motion-icon.mjs production-package \
+  --write-baseline baseline.json
 
-Use enlarged size such as 96px for geometry inspection.
+node scripts/verify-motion-icon.mjs production-package \
+  --baseline baseline.json
+```
 
-# V10 Interaction Test
+Exact hashes are appropriate only in a pinned browser/OS rendering environment. Treat them as deterministic CI regression evidence, not a cross-platform perceptual metric.
 
-Test:
+## Output
 
-- rapid repeat
-- reverse
-- retarget
-- disabled state
-- re-entry
+The verifier writes:
 
-# V11 Retarget Continuity Test
+- `verify-report.json`
+- `verify-report.html`
+- `screenshots/`
+- `manifest.json > verification`
 
-Interrupt at:
+A production package must have:
 
-25%
-50%
-75%
+```json
+{
+  "verification": {
+    "status": "PASS"
+  }
+}
+```
 
-Request a different valid target.
-
-Verify:
-
-- no snap back
-- obsolete target does not win
-- no stuck intermediate pose
-- final visual matches latest product state
-
-# V12 State vs Action Test
-
-Example:
-
-Product state:
-playing
-
-Visible media control:
-pause
-
-Incorrect mapping is a semantic failure.
-
-# Release Blockers
+## Absolute blockers
 
 P0:
 
 - wrong product state
 - wrong state/action semantics
-- critical meaning disappears under reduced motion
-- animation runtime becomes business-state authority
+- latest product state does not win
+- reduced motion loses critical meaning
+- contract/asset semantic part mismatch
+- unsafe SVG feature passes build unexpectedly
+- browser/runtime exception during qualified verification
 
 P1:
 
-- rapid interaction leaves stuck intermediate state
-- obsolete animation target wins
-- final landing does not match requested state
-- unjustified distracting stable-state loop
+- stable geometry moves beyond tolerance
+- final landing differs from contract target
+- high-frequency interaction snaps/sticks unexpectedly
+- actual-size icon loses recognizability

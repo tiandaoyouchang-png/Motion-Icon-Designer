@@ -1,0 +1,191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://motion-icon-designer.local/schemas/motion-icon-contract.schema.json",
+  "title": "Motion Icon Production Contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "version", "product", "state", "behavior", "semantics", "geometry", "motion", "visual_states", "transitions", "landing", "accessibility", "implementation", "verification"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+    "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[a-z0-9.-]+)?$"},
+    "product": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["input_model", "representation_role", "source_of_truth"],
+      "properties": {
+        "input_model": {"enum": ["boolean", "discrete", "continuous", "event", "derived"]},
+        "representation_role": {"enum": ["status", "action", "mode", "value", "progress", "alert"]},
+        "source_of_truth": {"type": "string", "minLength": 1},
+        "safety_relevant": {"type": "boolean", "default": false}
+      }
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["initial", "allowed"],
+      "properties": {
+        "initial": {"$ref": "#/$defs/stateValue"},
+        "allowed": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/stateValue"}}
+      }
+    },
+    "behavior": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reactivity", "interrupt_policy"],
+      "properties": {
+        "reactivity": {"enum": ["transition", "continuous-response", "event-pulse", "persistent-static"]},
+        "interrupt_policy": {"enum": ["complete", "reverse", "retarget"]},
+        "loop_policy": {"enum": ["never", "while-active", "continuous-semantic"]}
+      }
+    },
+    "semantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verb", "primary_family"],
+      "properties": {
+        "verb": {"type": "string", "minLength": 1},
+        "primary_family": {"type": "string", "minLength": 1},
+        "secondary_family": {"type": ["string", "null"]},
+        "no_internal_motion_reason": {"type": ["string", "null"]}
+      }
+    },
+    "geometry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stable_parts", "actors"],
+      "properties": {
+        "stable_parts": {"type": "array", "items": {"$ref": "#/$defs/partName"}, "uniqueItems": true},
+        "actors": {"type": "array", "items": {"$ref": "#/$defs/partName"}, "uniqueItems": true},
+        "pivot": {"type": ["string", "null"]},
+        "emitter": {"type": ["string", "null"]},
+        "seam": {"type": ["string", "null"]}
+      }
+    },
+    "motion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["personality", "default_duration_ms", "default_easing"],
+      "properties": {
+        "personality": {"type": "string", "minLength": 1},
+        "default_duration_ms": {"type": "integer", "minimum": 0, "maximum": 2000},
+        "default_easing": {"type": "string", "minLength": 1},
+        "overshoot_percent": {"type": "number", "minimum": 0, "maximum": 30}
+      }
+    },
+    "visual_states": {"type": "object", "minProperties": 1, "additionalProperties": {"$ref": "#/$defs/visualState"}},
+    "transitions": {"type": "array", "items": {"$ref": "#/$defs/transition"}},
+    "landing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": {"enum": ["return", "target-state", "symmetry", "hidden-rearm", "morph"]},
+        "persistent_visual": {"type": "string"}
+      }
+    },
+    "accessibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reduced_motion", "meaning_preserved"],
+      "properties": {
+        "reduced_motion": {"enum": ["direct-state-establish", "restrained-transition", "no-transient-motion"]},
+        "meaning_preserved": {"const": true}
+      }
+    },
+    "implementation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runtime", "platform_profile"],
+      "properties": {
+        "runtime": {"enum": ["svg-waapi"]},
+        "platform_profile": {"type": "string", "minLength": 1},
+        "asset_id_prefix": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"}
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scenarios"],
+      "properties": {
+        "stable_part_tolerance_px": {"type": "number", "minimum": 0, "maximum": 10, "default": 0.5},
+        "scenarios": {"type": "array", "items": {"$ref": "#/$defs/scenario"}}
+      }
+    }
+  },
+  "$defs": {
+    "stateValue": {"type": ["string", "number", "boolean"]},
+    "partName": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]*$"},
+    "styleValue": {"type": ["string", "number"]},
+    "partStyle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "opacity": {"type": ["number", "string"]},
+        "transform": {"type": "string"},
+        "transformOrigin": {"type": "string"},
+        "strokeDasharray": {"type": ["string", "number"]},
+        "strokeDashoffset": {"type": ["string", "number"]},
+        "fill": {"type": "string"},
+        "stroke": {"type": "string"}
+      }
+    },
+    "visualState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["parts"],
+      "properties": {"parts": {"type": "object", "additionalProperties": {"$ref": "#/$defs/partStyle"}}}
+    },
+    "keyframe": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["offset"],
+      "properties": {
+        "offset": {"type": "number", "minimum": 0, "maximum": 1},
+        "opacity": {"type": ["number", "string"]},
+        "transform": {"type": "string"},
+        "strokeDasharray": {"type": ["string", "number"]},
+        "strokeDashoffset": {"type": ["string", "number"]},
+        "fill": {"type": "string"},
+        "stroke": {"type": "string"},
+        "easing": {"type": "string"}
+      }
+    },
+    "track": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["part", "keyframes"],
+      "properties": {
+        "part": {"$ref": "#/$defs/partName"},
+        "keyframes": {"type": "array", "minItems": 2, "items": {"$ref": "#/$defs/keyframe"}},
+        "delay_ms": {"type": "integer", "minimum": 0, "maximum": 2000},
+        "duration_ms": {"type": "integer", "minimum": 0, "maximum": 2000},
+        "easing": {"type": "string"}
+      }
+    },
+    "transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to", "tracks"],
+      "properties": {
+        "from": {"$ref": "#/$defs/stateValue"},
+        "to": {"$ref": "#/$defs/stateValue"},
+        "tracks": {"type": "array", "items": {"$ref": "#/$defs/track"}},
+        "duration_ms": {"type": "integer", "minimum": 0, "maximum": 2000},
+        "easing": {"type": "string"}
+      }
+    },
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "start", "first_target", "interrupt_at", "second_target", "expected"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "start": {"$ref": "#/$defs/stateValue"},
+        "first_target": {"$ref": "#/$defs/stateValue"},
+        "interrupt_at": {"type": "number", "minimum": 0, "maximum": 1},
+        "second_target": {"$ref": "#/$defs/stateValue"},
+        "expected": {"$ref": "#/$defs/stateValue"}
+      }
+    }
+  }
+}

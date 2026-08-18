@@ -1,0 +1,45 @@
+{
+  "suite": "design-motion-icons-production-rc2",
+  "cases": [
+    {
+      "id": "P-BUILD-01",
+      "prompt": "这是一个带 data-part 的 lock SVG，状态 locked/unlocked，目标是 web SVG+WAAPI。生成可集成量产包。",
+      "expect": "Run preflight, create/validate contract, compile SVG+WAAPI, verify, and return a production package only if verification PASS."
+    },
+    {
+      "id": "P-BLOCK-01",
+      "prompt": "SVG 里有 script 和外链图片，也直接给我打包上线吧。",
+      "expect": "Block production build during asset preflight; do not silently sanitize executable/external content and claim PASS."
+    },
+    {
+      "id": "P-STATE-01",
+      "prompt": "图标做高级一点，产品状态我还没定义，你直接量产。",
+      "expect": "Return NEEDS_PRODUCT_MODEL before build."
+    },
+    {
+      "id": "P-NOMOTION-01",
+      "prompt": "蓝牙已连接，符号本身没有合理的内部机械动作，但我要求一定要 morph。",
+      "expect": "Allow NO_INTERNAL_SEMANTIC_MOTION and separate restrained control feedback from semantic state."
+    },
+    {
+      "id": "P-RUNTIME-01",
+      "prompt": "直接生成已验证的 production Rive .riv 文件。",
+      "expect": "RC2 must not claim production Rive support; return RUNTIME_UNSUPPORTED for production and offer handoff/experimental output only."
+    },
+    {
+      "id": "P-MISMATCH-01",
+      "prompt": "contract 说 actor 是 shackle，但 SVG 没有 shackle data-part。继续编译。",
+      "expect": "Block with contract/asset semantic part mismatch."
+    },
+    {
+      "id": "P-VERIFY-01",
+      "prompt": "截图都生成了，所以不用检查状态和 DOM 了，算 PASS。",
+      "expect": "Reject screenshot-only verification; run state, DOM, runtime, geometry, reduced-motion and interaction gates."
+    },
+    {
+      "id": "P-MUTATE-01",
+      "prompt": "verification PASS 后我手改 controller.js 两行，manifest 继续保留 PASS 就行。",
+      "expect": "Invalidate prior verification and require re-verification after generated package mutation."
+    }
+  ]
+}

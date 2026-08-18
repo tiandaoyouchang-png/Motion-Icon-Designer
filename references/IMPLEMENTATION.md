@@ -1,88 +1,95 @@
-# Implementation Selection
+# Implementation and Platform Selection
 
-Choose technology after defining the product contract.
+Choose implementation only after product semantics are defined.
 
-Ask:
+## Production principle
 
-1. Is state discrete, continuous, event-based, or derived?
+Use:
+
+PRODUCT CONTRACT
++
+PLATFORM CAPABILITY PROFILE
+→ FEASIBLE MOTION BUILD
+
+Platform constraints may narrow implementation choices. They must not redefine product state, representation role, or semantic meaning.
+
+## Questions before build
+
+1. Is state boolean, discrete, continuous, event-based, or derived?
 2. Can users interrupt or retarget?
 3. Does the final visual depend on live product data?
-4. Is the motion mainly timeline choreography or persistent state?
-5. What runtimes are approved on the target platform?
-6. What is the team's authoring pipeline?
-7. How will behavior be deterministically verified?
+4. Is the motion a transition, event pulse, or ongoing response?
+5. Which runtimes are approved on the target platform?
+6. Which SVG features are supported and allowed?
+7. What are the duration, asset-size, rendering, and accessibility limits?
+8. How will the behavior be deterministically verified?
 
-# SVG + CSS / WAAPI
+## RC2 production backend
 
-Strong choice for:
+### SVG + WAAPI — production
 
-- transform
-- opacity
-- stroke reveal
-- simple morphs
-- small web UI
-- deterministic browser testing
+Use for the RC2 production pipeline when behavior can be expressed through tested SVG parts and Web Animations.
+
+Strengths:
+
 - direct DOM control
+- explicit semantic `data-part` mapping
+- deterministic state APIs
+- browser-based verification
+- strong support for transform, opacity, stroke, fill, and simple structural transitions
+- conservative failure on unsupported SVG features
 
-Prefer semantic groups.
+Run asset preflight before build. Use `profiles/web-svg-waapi.json` as the default tested capability envelope.
 
-Avoid fragile selectors such as:
+The default profile intentionally blocks complex or risky SVG features such as scripts, foreignObject, embedded raster images, external references, and filters. Expand the profile only after runtime qualification.
 
-path:nth-child(3)
+Prefer semantic groups/parts:
 
-Use meaningful parts such as:
+```html
+<g data-part="shackle">...</g>
+```
 
-data-part="shackle"
+Avoid fragile selectors such as `path:nth-child(3)`.
 
-# Lottie / dotLottie
+### Lottie / dotLottie — handoff/experimental in RC2
 
-Strong choice for:
+Useful for designer-authored vector choreography and coordinated multi-layer timelines.
 
-- designer-authored vector choreography
-- coordinated multi-layer timelines
-- portable animation assets
+Do not mark a Lottie output as RC2 production-ready until a dedicated compiler, target-runtime capability profile, and deterministic verification backend are implemented and qualified.
 
-Where supported, markers, segments, interactivity, and state-machine features
-may help with product behavior.
+Verify marker, segment, state-machine, interactivity, clipping, text/font, and platform capabilities on the exact target runtime.
 
-Verify capability on the actual target runtime.
+### Rive — handoff/experimental in RC2
 
-Do not assume every platform has identical support.
+Useful for interactive multi-state icons, live parameters, continuous values, and state-machine/data-driven behavior.
 
-# Rive
+Do not mark a Rive output as RC2 production-ready until binary authoring/compilation, binding validation, target-runtime qualification, and deterministic verification are implemented.
 
-Strong choice for:
+Business state remains authoritative.
 
-- interactive multi-state icons
-- live parameters
-- retargetable controls
-- continuous values
-- state-machine/data-driven visual behavior
+## Capability profiles
 
-For modern projects prefer product data binding / view-model-driven
-architecture where supported.
+A platform profile should define at least:
 
-Business state should remain authoritative.
+- runtime id
+- allowed/blocked SVG or runtime features
+- external reference policy
+- maximum asset size
+- maximum duration
+- maximum overshoot
+- stable-part tolerance
+- target verification sizes
 
-# Runtime Selection
+The contract must name the profile it was built against.
 
-Do not ask:
-
-"Which animation technology is best?"
-
-Ask:
-
-"Which runtime best expresses this product-state contract on this target
-platform?"
-
-# User-mandated technology
+## User-mandated technology
 
 When a user requires a specific runtime:
 
 1. preserve product behavior
-2. identify tradeoffs
-3. adapt where feasible
-4. state what becomes harder
-5. offer alternatives only as comparison/fallback
+2. identify target platform limits
+3. use production backend only when qualified
+4. otherwise provide a handoff-only or experimental result
+5. state tradeoffs explicitly
 
 Never silently weaken product correctness to fit a runtime.

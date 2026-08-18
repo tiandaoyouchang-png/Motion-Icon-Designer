@@ -1,4 +1,4 @@
 interface:
   display_name: "Motion Icon Designer"
-  short_description: "Design semantic motion icons for UI and HMI"
-  default_prompt: "Use $design-motion-icons to turn this UI icon or product state into a semantic, production-ready motion-icon specification and verify its behavior."
+  short_description: "Design and build production semantic motion icons"
+  default_prompt: "Use $design-motion-icons to analyze this product-state icon, design semantic motion, and when production output is requested, build and verify an SVG+WAAPI production package before calling it production-ready."

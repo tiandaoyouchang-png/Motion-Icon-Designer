@@ -1,13 +1,13 @@
 ---
 name: design-motion-icons
-description: Design, review, systematize, hand off, and verify semantic motion icons and icon micro-interactions for product UI, automotive HMI, mobile, web, embedded interfaces, and design systems. Use for static-to-animated icons, SVG/Lottie/Rive icon behavior, hover/tap/active/disabled/loading/level states, icon morphs, motion-icon reviews, icon motion systems, implementation handoff, and semantic or interaction verification. Do not use for general page animation, cinematic/video animation, character animation, or unrelated decorative motion.
+description: Design, review, build, package, and verify semantic motion icons and icon micro-interactions for product UI, automotive HMI, mobile, web, embedded interfaces, and design systems. Use for static-to-animated icons, product-state icon behavior, SVG/WAAPI production assets, Lottie/Rive handoff, hover/tap/active/disabled/loading/level states, icon morphs, motion-icon reviews, motion systems, implementation handoff, runtime verification, and production packaging. Do not use for general page animation, cinematic/video animation, character animation, or unrelated decorative motion.
 ---
 
 # Design Motion Icons
 
-Design product behavior expressed through icon motion.
+Treat motion icons as product behavior, not decoration.
 
-Use:
+Use this control flow:
 
 PRODUCT STATE
 → REPRESENTATION ROLE
@@ -16,54 +16,53 @@ PRODUCT STATE
 → GESTURE FAMILY
 → REACTIVITY
 → MOTION LANGUAGE
-→ LANDING
-→ IMPLEMENTATION
+→ CANONICAL CONTRACT
+→ PLATFORM CAPABILITY
+→ BUILD
 → VERIFICATION
+→ PACKAGE
 
-## 1. Understand the product model
+## 0. Choose the operating mode
+
+Choose one or combine as needed:
+
+- ANALYZE — inspect product state, source asset, and platform constraints.
+- DESIGN — create semantic motion behavior.
+- REVIEW — diagnose an existing motion icon before redesigning.
+- SYSTEM — define shared grammar for an icon library.
+- HANDOFF — create a canonical product contract and runtime mapping.
+- BUILD — produce an executable production candidate.
+- VERIFY — run deterministic design/runtime gates.
+- PACKAGE — return a verified integration package.
+
+For BUILD/PACKAGE work, use the production pipeline below. Do not skip gates.
+
+## 1. Establish the product model
 
 Identify:
 
-- source state
-- target state
+- source and target states
 - persistent target state
-- product input model
-- representation role
-- source of truth
+- input model: boolean / discrete / continuous / event / derived
+- representation role: status / action / mode / value / progress / alert
+- authoritative source of truth
 - interaction frequency
-- whether activity continues after the transition
+- whether activity continues after transition
+- whether the state is safety-relevant
 
-Input models:
+Read `references/PRODUCT-STATES.md` when semantics are non-trivial.
 
-- boolean
-- discrete
-- continuous
-- event
-- derived
+Product state is authoritative. Animation state is not.
 
-Representation roles:
-
-- status
-- action
-- mode
-- value
-- progress
-- alert
-
-Read `references/PRODUCT-STATES.md` when state semantics are non-trivial.
-
-Product state is authoritative.
-
-Animation state is not.
+If the product model is too ambiguous to determine state meaning, return `NEEDS_PRODUCT_MODEL`. Do not invent business state.
 
 ## 2. Name the semantic verb
 
 Describe what the represented object, signal, or material naturally does.
 
-Good:
+Examples:
 
 - heat rises
-- bell rings
 - battery fills
 - fan turns
 - signal radiates
@@ -71,72 +70,53 @@ Good:
 - pointer aligns
 - lines reform
 
-Do not begin from generic visual effects such as:
+Do not start from generic effects such as scale, bounce, shake, or spin unless that movement itself carries meaning.
 
-- scale
-- bounce
-- shake
-- spin
+If no defensible internal semantic motion exists, allow `NO_INTERNAL_SEMANTIC_MOTION`. A stable state plus restrained control feedback can be the correct result.
 
-unless that movement itself carries the intended meaning.
+## 3. Inspect and preflight the asset
 
-Decorative/control feedback is allowed when requested, but label it separately
-from semantic icon motion.
+For SVG production work, run intake preflight before changing geometry:
 
-## 3. Inspect geometry
+```bash
+node scripts/asset-preflight.mjs <source.svg> \
+  --profile profiles/web-svg-waapi.json \
+  --mode intake \
+  --out preflight.json
+```
 
-When vector geometry exists, identify:
+Identify:
 
 - stable structure
-- semantic actor
-- pivot
-- seam
-- emitter
-- container
-- direction
-- symmetry
+- semantic actors
+- pivot / seam / emitter / container
+- direction and symmetry
 - clipping / occlusion
+- IDs and internal references
+- unsupported or unsafe SVG features
 
-Do not animate the root icon by default.
+When vector geometry exists, add stable `data-part` annotations to semantic elements. Do not change geometry merely to make animation easier.
 
-Root motion is valid only when the whole represented object performs the
-semantic action.
+Before build, preflight again in `build` mode. If it fails, return `ASSET_NORMALIZATION_REQUIRED` or the reported blocker instead of producing an unsafe package.
 
-When geometry is inferred from a screenshot or raster image, say so.
-
-## 4. Select a gesture family
+## 4. Select gesture grammar and reactivity
 
 Read `references/GESTURE-FAMILIES.md`.
 
-Reuse semantic grammar.
+Reuse semantic grammar, not copied keyframes. Never blindly reuse exact distances, pivots, rotations, stagger values, or element counts.
 
-Do not blindly reuse exact:
-
-- keyframes
-- distances
-- pivots
-- rotations
-- stagger values
-- element counts
-
-Shared family does not mean identical animation.
-
-## 5. Define reactivity
-
-Choose:
+Choose reactivity:
 
 - transition
 - continuous-response
 - event-pulse
 - persistent-static
 
-A stable ON state normally becomes visually stable after its transition.
+Stable ON states normally become visually stable after their transition. Continuous animation requires an ongoing semantic reason.
 
-Continuous animation requires an ongoing semantic reason.
+## 5. Define landing and interruption
 
-## 6. Define the landing
-
-Choose:
+Choose landing:
 
 - return
 - target-state
@@ -144,25 +124,25 @@ Choose:
 - hidden-rearm
 - morph
 
-Separate transient animation from persistent state presentation.
+Choose interruption:
 
-## 7. Apply motion language
+- COMPLETE
+- REVERSE
+- RETARGET
+
+Latest product state must win. High-frequency levels and continuously changing controls normally prefer RETARGET.
+
+Separate transient transition behavior from persistent state presentation.
+
+## 6. Apply motion language
 
 Read `references/MOTION-LANGUAGE.md`.
 
-Select:
-
-- personality
-- duration token
-- easing
-- amplitude
-- overshoot
-- sequencing
-- loop policy
+Select personality, duration, easing, amplitude, overshoot, sequencing, and loop policy.
 
 Frequently used controls should generally be faster and quieter.
 
-For automotive HMI, prioritize:
+For automotive HMI prioritize:
 
 1. state clarity
 2. responsiveness
@@ -171,200 +151,197 @@ For automotive HMI, prioritize:
 5. semantic motion
 6. aesthetic flourish
 
-## 8. Define interruption behavior
+## 7. Create the canonical production contract
 
-For interactive controls choose:
+For BUILD work, create `contract.json` conforming to:
 
-- COMPLETE
-- REVERSE
-- RETARGET
+`schemas/motion-icon-contract.schema.json`
 
-Product state takes priority over completion of obsolete animation.
+Then validate it:
 
-Level and continuously changing controls usually prefer RETARGET.
+```bash
+node scripts/validate-contract.mjs contract.json \
+  --profile profiles/web-svg-waapi.json
+```
 
-## 9. Design reduced motion
+The contract must define:
 
-Preserve state meaning.
+- product state and source of truth
+- allowed states and initial state
+- semantic verb and gesture family
+- stable parts and actors
+- persistent visual states
+- runtime-neutral transition tracks
+- interruption policy
+- reduced-motion behavior
+- platform profile
+- verification scenarios
 
-Reduce:
+Business code communicates product facts. Prefer `setState({ ... })` or a product state value over named animation clips.
 
-- travel
-- bounce
-- overshoot
-- decorative follow-through
+Read `references/DEVELOPER-HANDOFF.md` and `references/OUTPUT-SPEC.md` when creating the contract.
 
-Do not remove the target state.
-
-## 10. Select implementation
+## 8. Apply the platform capability envelope
 
 Read `references/IMPLEMENTATION.md`.
 
-Choose runtime based on:
+RC2 production backend scope is intentionally narrow:
 
-- state complexity
-- interruption / retarget requirements
-- live product data
-- target platform
-- team pipeline
-- runtime maturity
-- deterministic testing requirements
+- PRODUCTION: SVG + WAAPI
+- HANDOFF / EXPERIMENTAL: Lottie / dotLottie / Rive
 
-Technology is downstream of behavior.
+Do not claim production readiness for an unverified backend.
 
-## 11. Create developer handoff
+Use `profiles/web-svg-waapi.json` for the default production capability envelope. Platform constraints may narrow the motion design, but must not change product semantics.
 
-When implementation is requested, read:
+If the requested runtime is unsupported for production build, return `RUNTIME_UNSUPPORTED` and provide handoff-only output when useful.
 
-`references/DEVELOPER-HANDOFF.md`
+## 9. Normalize and compile
 
-Create one canonical product contract first.
+Normalize semantic SVG without changing intended geometry:
 
-Then map it to:
+```bash
+node scripts/svg-normalizer.mjs annotated.svg \
+  --out normalized.svg \
+  --id-prefix <icon-id>
+```
 
-- SVG / WAAPI
-- dotLottie / Lottie
-- Rive
-- another approved runtime
+Compile:
 
-Business code should normally set product state rather than request named
-animation clips.
+```bash
+node scripts/svg-waapi-compiler.mjs \
+  --svg normalized.svg \
+  --contract contract.json \
+  --profile profiles/web-svg-waapi.json \
+  --out production-package
+```
 
-## 12. Verify
+Or run the orchestrated build:
+
+```bash
+node scripts/build-motion-icon.mjs \
+  --svg annotated.svg \
+  --contract contract.json \
+  --profile profiles/web-svg-waapi.json \
+  --out production-package
+```
+
+Do not hand-author a replacement build path when these scripts cover the requested backend.
+
+## 10. Verify the production candidate
 
 Read `references/VERIFICATION.md`.
 
-Verify:
+Run:
 
-- semantic meaning
-- state/action correctness
-- persistent state
-- actual-size legibility
-- intermediate frames
-- landing
-- rapid interaction
-- interruption
-- reduced motion
-- duplicate instances
+```bash
+node scripts/verify-motion-icon.mjs production-package \
+  --out production-package
+```
+
+Verifier v2 checks, when applicable:
+
+- DOM/root invariants
+- duplicate SVG IDs and external references
+- contract-to-asset semantic part mapping
+- stable-part geometry invariants
+- actual-size captures
+- intermediate states
+- final landing
+- rapid retarget/reversal scenarios
 - latest product state wins
+- reduced-motion target meaning
+- browser console/runtime failures
+- optional pinned-environment screenshot hash baseline
 
-Use `scripts/verify-motion-icon.mjs` when a runnable implementation exists.
+Never describe a package as production-ready when `manifest.json` has verification status other than `PASS`.
 
-# Modes
+## 11. Package the output
 
-## DESIGN
+Read `references/PRODUCTION-PACKAGE.md`.
 
-Create semantic motion for one or more icons.
+A production candidate contains at least:
 
-## REVIEW
+```text
+production-package/
+├── source.svg
+├── motion-icon.svg
+├── controller.js
+├── contract.json
+├── platform-profile.json
+├── manifest.json
+├── preflight-report.json
+├── normalize-report.json
+├── compile-report.json
+├── fixture.html
+├── verify-report.json
+├── verify-report.html
+├── screenshots/
+└── README.md
+```
 
-Diagnose before redesigning.
+Return the complete package, not disconnected snippets.
 
-Prioritize:
+## Hard blockers
 
-P0 — semantic/state correctness
+Stop or downgrade the deliverable when any of these occur:
 
-P1 — interaction/legibility
+- `NEEDS_PRODUCT_MODEL` — state semantics are insufficient.
+- `CONTRACT_CONFLICT` — state/role/source-of-truth definitions conflict.
+- `NO_INTERNAL_SEMANTIC_MOTION` — no defensible semantic actor/action exists.
+- `ASSET_NORMALIZATION_REQUIRED` — input cannot enter the tested build profile yet.
+- `RUNTIME_UNSUPPORTED` — requested backend is outside production scope.
+- `BUILD_BLOCKED` — compiler/preflight/contract gate fails.
+- `VERIFY_FAILED` — runtime, interaction, geometry, accessibility, or visual gate fails.
 
-P2 — motion-system consistency
+A blocker is preferable to silently generating a misleading asset.
 
-P3 — polish
+# Review priorities
 
-## SYSTEM
+P0 — product-state, state/action, latest-state, reduced-motion, build/runtime correctness
 
-For icon libraries establish:
+P1 — interaction continuity, actual-size legibility, geometry invariants, platform compatibility
 
-Product State Grammar
-→ Motion Personality
-→ Gesture Families
-→ Timing Tokens
-→ Loop Policy
-→ Implementation Rules
-→ Verification Rules
+P2 — motion-system consistency and reusable grammar
 
-Then create a Motion Icon Matrix.
-
-## HANDOFF
-
-Translate the canonical motion contract into production implementation.
-
-## VERIFY
-
-Run design and implementation gates.
+P3 — aesthetic polish
 
 # Important distinctions
 
-CONTROL FEEDBACK
-≠
-ICON SEMANTIC MOTION
+CONTROL FEEDBACK ≠ ICON SEMANTIC MOTION
 
-TRANSITION
-≠
-PERSISTENT STATE
+TRANSITION ≠ PERSISTENT STATE
 
-PRODUCT STATE
-≠
-ANIMATION STATE
+PRODUCT STATE ≠ ANIMATION STATE
 
-CURRENT STATE
-≠
-AVAILABLE ACTION
+CURRENT STATE ≠ AVAILABLE ACTION
 
-GESTURE FAMILY
-≠
-COPY-PASTED KEYFRAMES
+GESTURE FAMILY ≠ COPY-PASTED KEYFRAMES
 
-# Decorative motion policy
+PLATFORM CONSTRAINT ≠ PRODUCT SEMANTICS
 
-Decorative motion is allowed.
-
-Examples:
-
-- subtle button scale
-- hover glow
-- brand-character bounce
-- elevation response
-- celebratory sparkle
-
-Treat it as a separate layer.
-
-CONTROL / BRAND MOTION
-+
-SEMANTIC ICON MOTION
-+
-PRODUCT STATE
-
-may coexist.
-
-Do not use decoration as a substitute for missing state semantics.
+CAPTURED SCREENSHOT ≠ VERIFIED SCREENSHOT
 
 # Reference routing
 
-Product states:
-`references/PRODUCT-STATES.md`
+Product states: `references/PRODUCT-STATES.md`
 
-Gesture grammar:
-`references/GESTURE-FAMILIES.md`
+Gesture grammar: `references/GESTURE-FAMILIES.md`
 
-Timing and personality:
-`references/MOTION-LANGUAGE.md`
+Timing/personality: `references/MOTION-LANGUAGE.md`
 
-Runtime selection:
-`references/IMPLEMENTATION.md`
+Runtime/platform selection: `references/IMPLEMENTATION.md`
 
-Developer delivery:
-`references/DEVELOPER-HANDOFF.md`
+Developer contract: `references/DEVELOPER-HANDOFF.md`
 
-Quality gates:
-`references/VERIFICATION.md`
+Verification gates: `references/VERIFICATION.md`
 
-HMI examples:
-`references/HMI-GOLDEN-SUITE.md`
+Production package: `references/PRODUCTION-PACKAGE.md`
 
-Failure diagnosis:
-`references/FAILURE-CATALOG.md`
+HMI examples: `references/HMI-GOLDEN-SUITE.md`
 
-Output schemas:
-`references/OUTPUT-SPEC.md`
+Failure diagnosis: `references/FAILURE-CATALOG.md`
+
+Output schemas: `references/OUTPUT-SPEC.md`
 
 Load only references needed for the current task.

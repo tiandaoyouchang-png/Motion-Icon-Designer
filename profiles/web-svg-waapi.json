@@ -1,0 +1,16 @@
+{
+  "id": "web-svg-waapi",
+  "runtime": "svg-waapi",
+  "allowed_svg_elements": ["svg", "g", "path", "rect", "circle", "ellipse", "line", "polyline", "polygon", "defs", "clipPath", "mask", "linearGradient", "radialGradient", "stop"],
+  "blocked_svg_elements": ["script", "foreignObject", "image", "use", "style", "filter", "animate", "animateTransform", "set"],
+  "allow_external_references": false,
+  "allow_inline_event_handlers": false,
+  "allow_root_transform": false,
+  "require_view_box": true,
+  "require_semantic_parts_for_build": true,
+  "max_asset_bytes": 65536,
+  "max_duration_ms": 600,
+  "max_overshoot_percent": 5,
+  "stable_part_tolerance_px": 0.5,
+  "sizes_px": [20, 24, 32, 96]
+}

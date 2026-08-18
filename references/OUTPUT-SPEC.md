@@ -1,11 +1,12 @@
-
 # Output Specification
 
-# Single Icon
+Choose output by mode.
 
-## Functional Intent
+## ANALYZE / DESIGN — single icon
 
-## Product Model
+### Functional Intent
+
+### Product Model
 
 Input model:
 
@@ -13,21 +14,23 @@ Representation role:
 
 Source of truth:
 
-## State Transition
+Safety relevance:
 
-Source:
+### State Model
 
-Trigger:
+Allowed states:
 
-Target:
+Initial state:
 
-Persistent target:
+Persistent state mapping:
 
-## Semantic Concept
+### Semantic Concept
 
 Verb:
 
-## Geometry
+No-motion justification when applicable:
+
+### Geometry
 
 Stable structure:
 
@@ -37,17 +40,17 @@ Pivot / emitter / seam:
 
 Movement axis:
 
-## Gesture Family
+### Gesture Family
 
 Primary:
 
 Secondary:
 
-## Reactivity
+### Reactivity
 
 Transition / continuous-response / event-pulse / persistent-static
 
-## Motion Language
+### Motion Language
 
 Personality:
 
@@ -57,9 +60,9 @@ Easing:
 
 Overshoot:
 
-Loop:
+Loop policy:
 
-## Interaction
+### Interaction
 
 Interrupt policy:
 
@@ -67,40 +70,50 @@ Reverse behavior:
 
 Retarget behavior:
 
-## Timeline
+### Landing
 
-Use milliseconds or normalized percentages.
+### Reduced Motion
 
-## Persistent State
+### Implementation
 
-## Reduced Motion
+Production backend:
 
-## Implementation
+Platform profile:
 
-Preferred:
+Experimental/handoff alternative:
 
-Alternative:
+### Verification
 
-Risk / tradeoff:
+List icon-specific gates and blockers.
 
-## Verification
-
-List icon-specific gates.
-
-# Motion Icon Matrix
+## SYSTEM — Motion Icon Matrix
 
 For batch/system work:
 
-\| Icon | Input | Role | State | Verb | Family | Actor | Reactivity | Timing | Landing | Interrupt | Runtime |
+| Icon | Input | Role | States | Verb | Family | Actor | Reactivity | Timing | Landing | Interrupt | Backend | Verification |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
 
-# Developer Handoff
+## BUILD — canonical contract
 
-Include:
+Create `contract.json` conforming to:
 
-- product property
-- source of truth
-- state mapping
-- runtime API
-- interruption behavior
-- reduced-motion behavior
-- verification cases
+`schemas/motion-icon-contract.schema.json`
+
+Do not omit persistent `visual_states`, platform profile, or verification scenarios.
+
+## PACKAGE — production output
+
+Return one complete `production-package/` as defined in `references/PRODUCTION-PACKAGE.md`.
+
+Required status summary:
+
+```text
+Build: PASS | BLOCKED
+Verification: PASS | FAIL | NOT_RUN
+Runtime: svg-waapi
+Platform profile: <id>
+Contract: valid | invalid
+Asset preflight: buildable | blocked
+```
+
+If blocked, return the blocker code and supporting report instead of pretending a production artifact exists.
