@@ -72,9 +72,9 @@ api.reset()
 
 `setState` establishes a persistent product state directly.
 
-`beginTransition` performs semantic interpolation toward a requested state. Under RETARGET/REVERSE, active motion is interrupted from the current visual pose so the latest requested state wins.
+`beginTransition` performs semantic interpolation toward a requested state. Under RETARGET/REVERSE, active motion is interrupted from the current visual pose so the latest requested state wins. Under COMPLETE, the active transition finishes first and the latest queued target is then settled.
 
-Reduced motion must still establish the requested target state.
+Reduced motion must still establish the requested target state. RC2 production supports `direct-state-establish` and `no-transient-motion`; restrained transitions remain handoff-only until separately qualified.
 
 ## Handoff checklist
 
@@ -126,4 +126,4 @@ Package manifest:
 
 ## Production handoff rule
 
-A handoff is not a production package until build and verification gates pass. For RC2, only the SVG+WAAPI backend can receive production `PASS` status.
+A handoff is not a production package until build and verification gates pass. For RC2, only the qualified SVG+WAAPI capability envelope can receive production `PASS` status. Re-run verification after any manual mutation of asset, controller, contract, platform profile, or fixture because integrity hashes invalidate the prior PASS.

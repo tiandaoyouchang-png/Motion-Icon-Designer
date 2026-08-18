@@ -15,7 +15,9 @@
     "verify:wifi": "node scripts/verify-motion-icon.mjs fixtures/wifi/index.html --out motion-verify/wifi",
     "verify:media": "node scripts/verify-motion-icon.mjs fixtures/play-pause/index.html --out motion-verify/play-pause",
     "verify:legacy": "npm run verify:seat && npm run verify:lock && npm run verify:wifi && npm run verify:media",
-    "test:production": "npm run test:static && npm run build:production-lock && npm run verify:legacy"
+    "test:production": "npm run test:static && npm run build:production-lock && npm run verify:legacy",
+    "test:qualification": "node scripts/qualification-suite.mjs --out motion-verify/qualification-report.json",
+    "test:release": "npm run test:production && npm run test:qualification"
   },
   "devDependencies": {
     "playwright": "1.62.1"

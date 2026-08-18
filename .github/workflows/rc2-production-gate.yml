@@ -9,7 +9,7 @@ on:
 jobs:
   production-gate:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -24,7 +24,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run RC2 production gate
-        run: npm run test:production
+        run: npm run test:release
 
       - name: Upload verification evidence
         if: always()

@@ -24,11 +24,28 @@ Platform constraints may narrow implementation choices. They must not redefine p
 7. What are the duration, asset-size, rendering, and accessibility limits?
 8. How will the behavior be deterministically verified?
 
-## RC2 production backend
+## RC2 production capability envelope
 
 ### SVG + WAAPI — production
 
-Use for the RC2 production pipeline when behavior can be expressed through tested SVG parts and Web Animations.
+The RC2 production controller is qualified only for:
+
+- product input: `boolean`, `discrete`, `derived`
+- reactivity: `transition`, `persistent-static`
+- interruption: `complete`, `reverse`, `retarget`
+- loop policy: `never`
+- reduced motion: `direct-state-establish`, `no-transient-motion`
+- tested SVG features allowed by `profiles/web-svg-waapi.json`
+
+Fail closed for RC2 production when the contract requests:
+
+- live `continuous` input / `continuous-response`
+- `event` input / `event-pulse` rearm semantics
+- `while-active` or `continuous-semantic` loops
+- `restrained-transition` reduced motion
+- a runtime other than `svg-waapi`
+
+These behaviors may still be designed or handed off, but must not receive production PASS from the RC2 backend.
 
 Strengths:
 
@@ -36,12 +53,12 @@ Strengths:
 - explicit semantic `data-part` mapping
 - deterministic state APIs
 - browser-based verification
-- strong support for transform, opacity, stroke, fill, and simple structural transitions
+- transform, opacity, stroke, fill, and simple structural transitions
 - conservative failure on unsupported SVG features
 
 Run asset preflight before build. Use `profiles/web-svg-waapi.json` as the default tested capability envelope.
 
-The default profile intentionally blocks complex or risky SVG features such as scripts, foreignObject, embedded raster images, external references, and filters. Expand the profile only after runtime qualification.
+The default profile intentionally blocks scripts, foreignObject, embedded raster images, external references, filters, inline handlers, and other unqualified features. Expand the profile only after target-runtime qualification.
 
 Prefer semantic groups/parts:
 

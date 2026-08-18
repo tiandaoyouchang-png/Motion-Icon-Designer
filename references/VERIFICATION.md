@@ -2,7 +2,7 @@
 
 Do not judge only from a looping preview or screenshot contact sheet.
 
-A production candidate must prove semantic, contract, runtime, geometry, interaction, accessibility, and packaging correctness.
+A production candidate must prove contract, runtime, geometry, interaction, accessibility, integrity, and packaging correctness.
 
 Run:
 
@@ -20,7 +20,8 @@ Verify:
 - persistent target exists
 - current state is not confused with available action
 - product state remains authoritative
-- contract validates against the platform profile
+- JSON Schema and semantic contract validation pass
+- contract stays inside the qualified platform capability envelope
 
 P0 failure examples:
 
@@ -28,21 +29,38 @@ P0 failure examples:
 - wrong state/action semantics
 - missing persistent visual state
 - runtime becomes business-state authority
+- unsupported continuous/event/loop capability presented as RC2 production-ready
 
-## Gate B — Asset and DOM correctness
+## Gate B — Asset, DOM, and geometry correctness
 
 Verify:
 
 - exactly one `[data-motion-icon]` root
 - valid/stable viewBox
 - no duplicate SVG IDs
+- no duplicate semantic `data-part` names
 - no blocked external references
 - no unexpected root transform
 - every contract actor/stable part exists as `data-part`
-- finite root bounds
+- required semantic parts have finite, non-degenerate bounds
+- stable parts stay within configured geometry tolerance
 - source asset passed preflight
 
-## Gate C — Runtime and interaction correctness
+## Gate C — Package integrity
+
+The generated manifest records hashes for:
+
+- `motion-icon.svg`
+- `controller.js`
+- `contract.json`
+- `platform-profile.json`
+- `fixture.html`
+
+Verifier v2 recomputes these hashes before runtime checks. Any mismatch is a verification failure.
+
+A prior PASS is invalid after manual mutation of an integrity-tracked file. Re-run verification after every generated-package change.
+
+## Gate D — Runtime and interaction correctness
 
 Verify:
 
@@ -50,14 +68,17 @@ Verify:
 - no failed runtime resources
 - no unhandled console errors
 - final state equals latest requested product state
-- animation is settled after seek/landing
+- no runtime `lastError` remains after a qualified transition
+- animation is settled after landing
 - rapid input does not leave a stuck intermediate state
-- RETARGET/REVERSE reaches the latest requested state
+- RETARGET reaches the newest state from current visual pose
+- REVERSE returns to the requested prior state
+- COMPLETE finishes the active transition and then settles the latest queued target
 - missing/obsolete transition never beats current product state
 
-Interrupt at representative points such as 25%, 50%, and 75% when the icon's risk profile requires it.
+Interrupt at representative points such as 25%, 50%, and 75% when risk requires it.
 
-## Gate D — Geometry and actual-size correctness
+## Gate E — Actual-size visual evidence
 
 Capture representative frames at intended sizes, commonly:
 
@@ -68,30 +89,27 @@ Capture representative frames at intended sizes, commonly:
 
 Check:
 
-- stable parts remain within configured geometry tolerance
-- semantic actor movement follows the correct pivot/emitter/seam
+- actor movement follows the intended pivot/emitter/seam
 - silhouettes remain recognizable
 - no clipping or unexpected root-bound expansion
 - target geometry lands exactly
 
-Verifier v2 automatically checks configured stable-part bounds when `getVisualState()` and a production contract are available.
+Screenshots are evidence, not validation by themselves.
 
-## Gate E — Reduced motion
+## Gate F — Reduced motion
 
 State meaning must survive.
 
-Reduced motion may:
+RC2 production supports:
 
-- remove travel
-- remove overshoot
-- switch directly to target
-- use a restrained transition
+- `direct-state-establish`
+- `no-transient-motion`
 
-It must not erase the target state. Every allowed state should remain establishable with reduced motion enabled.
+`restrained-transition` is a design/handoff option but is not a qualified RC2 production behavior yet and must fail contract validation for BUILD/PACKAGE.
 
-## Gate F — Visual regression
+Every allowed state should remain directly establishable with reduced motion enabled.
 
-Screenshots are evidence, not validation by themselves.
+## Gate G — Visual regression
 
 Verifier v2 can write and compare exact screenshot hashes:
 
@@ -104,6 +122,16 @@ node scripts/verify-motion-icon.mjs production-package \
 ```
 
 Exact hashes are appropriate only in a pinned browser/OS rendering environment. Treat them as deterministic CI regression evidence, not a cross-platform perceptual metric.
+
+## Qualification suite
+
+Run:
+
+```bash
+npm run test:qualification
+```
+
+The RC2 qualification suite includes unseen successful builds, unsafe SVG blockers, contract/platform blockers, integrity mutation attacks, geometry hardening, and interruption-policy cases.
 
 ## Output
 
@@ -134,11 +162,14 @@ P0:
 - reduced motion loses critical meaning
 - contract/asset semantic part mismatch
 - unsafe SVG feature passes build unexpectedly
+- integrity-tracked package mutation is not detected
 - browser/runtime exception during qualified verification
+- package claims support for an unqualified RC2 capability
 
 P1:
 
 - stable geometry moves beyond tolerance
+- required semantic part is degenerate
 - final landing differs from contract target
 - high-frequency interaction snaps/sticks unexpectedly
 - actual-size icon loses recognizability
