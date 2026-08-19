@@ -1,0 +1,25 @@
+{
+  "id": "production-play-pause",
+  "version": "1.0.0-rc4",
+  "product": {"input_model":"boolean","representation_role":"action","source_of_truth":"media-playback-state","safety_relevant":false},
+  "state": {"initial":"paused","allowed":["paused","playing"]},
+  "behavior": {"reactivity":"transition","interrupt_policy":"reverse","loop_policy":"never"},
+  "semantics": {"verb":"available playback action swaps between play and pause","primary_family":"state-morph","secondary_family":null,"no_internal_motion_reason":null},
+  "geometry": {"stable_parts":[],"actors":["play","pause"],"pivot":"icon-center","emitter":null,"seam":null},
+  "motion": {"personality":"controlled-technical","default_duration_ms":140,"default_easing":"cubic-bezier(0.2, 0, 0, 1)","overshoot_percent":0},
+  "visual_states": {
+    "paused":{"parts":{"play":{"opacity":1},"pause":{"opacity":0}}},
+    "playing":{"parts":{"play":{"opacity":0},"pause":{"opacity":1}}}
+  },
+  "transitions": [
+    {"from":"paused","to":"playing","duration_ms":140,"easing":"cubic-bezier(0.2, 0, 0, 1)","tracks":[{"part":"play","keyframes":[{"offset":0,"opacity":1},{"offset":1,"opacity":0}]},{"part":"pause","keyframes":[{"offset":0,"opacity":0},{"offset":1,"opacity":1}]}]},
+    {"from":"playing","to":"paused","duration_ms":140,"easing":"cubic-bezier(0.2, 0, 0, 1)","tracks":[{"part":"play","keyframes":[{"offset":0,"opacity":0},{"offset":1,"opacity":1}]},{"part":"pause","keyframes":[{"offset":0,"opacity":1},{"offset":1,"opacity":0}]}]}
+  ],
+  "landing": {"type":"target-state","persistent_visual":"When paused, Play is visible; when playing, Pause is visible, representing the available action."},
+  "accessibility": {"reduced_motion":"direct-state-establish","meaning_preserved":true},
+  "implementation": {"runtime":"svg-waapi","platform_profile":"web-svg-waapi","asset_id_prefix":"production-play-pause"},
+  "verification": {"stable_part_tolerance_px":0.5,"scenarios":[
+    {"name":"reverse-to-paused","start":"paused","first_target":"playing","interrupt_at":0.5,"second_target":"paused","expected":"paused"},
+    {"name":"reverse-to-playing","start":"playing","first_target":"paused","interrupt_at":0.5,"second_target":"playing","expected":"playing"}
+  ]}
+}
