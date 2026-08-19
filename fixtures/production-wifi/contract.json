@@ -1,0 +1,28 @@
+{
+  "id":"production-wifi","version":"1.0.0-rc4",
+  "product":{"input_model":"discrete","representation_role":"value","source_of_truth":"connectivity-state","safety_relevant":false},
+  "state":{"initial":0,"allowed":[0,1,2,3]},
+  "behavior":{"reactivity":"transition","interrupt_policy":"retarget","loop_policy":"never"},
+  "semantics":{"verb":"signal strength establishes outward","primary_family":"emit-step","secondary_family":null,"no_internal_motion_reason":null},
+  "geometry":{"stable_parts":["dot"],"actors":["band1","band2","band3"],"pivot":null,"emitter":"dot","seam":null},
+  "motion":{"personality":"controlled-technical","default_duration_ms":160,"default_easing":"cubic-bezier(0.2, 0, 0, 1)","overshoot_percent":0},
+  "visual_states":{
+    "0":{"parts":{"dot":{"opacity":1},"band1":{"opacity":0},"band2":{"opacity":0},"band3":{"opacity":0}}},
+    "1":{"parts":{"dot":{"opacity":1},"band1":{"opacity":1},"band2":{"opacity":0},"band3":{"opacity":0}}},
+    "2":{"parts":{"dot":{"opacity":1},"band1":{"opacity":1},"band2":{"opacity":1},"band3":{"opacity":0}}},
+    "3":{"parts":{"dot":{"opacity":1},"band1":{"opacity":1},"band2":{"opacity":1},"band3":{"opacity":1}}}
+  },
+  "transitions":[
+    {"from":0,"to":3,"tracks":[{"part":"band1","keyframes":[{"offset":0,"opacity":0},{"offset":1,"opacity":1}]},{"part":"band2","keyframes":[{"offset":0,"opacity":0},{"offset":1,"opacity":1}]},{"part":"band3","keyframes":[{"offset":0,"opacity":0},{"offset":1,"opacity":1}]}]},
+    {"from":3,"to":1,"tracks":[{"part":"band2","keyframes":[{"offset":0,"opacity":1},{"offset":1,"opacity":0}]},{"part":"band3","keyframes":[{"offset":0,"opacity":1},{"offset":1,"opacity":0}]}]},
+    {"from":3,"to":0,"tracks":[{"part":"band1","keyframes":[{"offset":0,"opacity":1},{"offset":1,"opacity":0}]},{"part":"band2","keyframes":[{"offset":0,"opacity":1},{"offset":1,"opacity":0}]},{"part":"band3","keyframes":[{"offset":0,"opacity":1},{"offset":1,"opacity":0}]}]},
+    {"from":0,"to":2,"tracks":[{"part":"band1","keyframes":[{"offset":0,"opacity":0},{"offset":1,"opacity":1}]},{"part":"band2","keyframes":[{"offset":0,"opacity":0},{"offset":1,"opacity":1}]}]}
+  ],
+  "landing":{"type":"target-state","persistent_visual":"Bands persist at the requested signal level."},
+  "accessibility":{"reduced_motion":"direct-state-establish","meaning_preserved":true},
+  "implementation":{"runtime":"svg-waapi","platform_profile":"web-svg-waapi","asset_id_prefix":"production-wifi"},
+  "verification":{"stable_part_tolerance_px":0.5,"scenarios":[
+    {"name":"retarget-strength-down","start":0,"first_target":3,"interrupt_at":0.5,"second_target":1,"expected":1},
+    {"name":"retarget-strength-up","start":3,"first_target":0,"interrupt_at":0.5,"second_target":2,"expected":2}
+  ]}
+}
