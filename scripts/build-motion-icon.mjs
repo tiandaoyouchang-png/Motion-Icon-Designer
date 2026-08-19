@@ -11,28 +11,20 @@ if (!args.length || args.includes("--help")) {
   process.exit(args.length ? 0 : 1);
 }
 function option(name, fallback = null) { const i = args.indexOf(name); return i >= 0 && args[i + 1] ? args[i + 1] : fallback; }
-function block(code, message, details = null) {
-  console.error(`BLOCKED ${code}: ${message}`);
-  if (details) console.error(JSON.stringify(details, null, 2));
-  process.exit(2);
-}
-function run(script, scriptArgs) {
-  const result = spawnSync(process.execPath, [path.resolve("scripts", script), ...scriptArgs], { stdio: "inherit" });
-  if (result.status !== 0) process.exit(result.status ?? 1);
-}
-
+function run(script, scriptArgs) { const result = spawnSync(process.execPath, [path.resolve("scripts", script), ...scriptArgs], { stdio: "inherit" }); if (result.status !== 0) process.exit(result.status ?? 1); }
+function block(code, message, details = null, exitCode = 2) { console.error(JSON.stringify({ ok: false, status: "BUILD_BLOCKED", code, message, details })); process.exit(exitCode); }
 const svgArg = option("--svg");
 const contractArg = option("--contract");
-if (!svgArg) block("ASSET_REQUIRED", "--svg is required for production build.");
-if (!contractArg) block("NEEDS_PRODUCT_MODEL", "A canonical product contract is required before production build.");
+const profileArg = option("--profile", "profiles/web-svg-waapi.json");
+if (!svgArg) block("ASSET_REQUIRED", "--svg is required.");
+if (!contractArg) block("NEEDS_PRODUCT_MODEL", "--contract is required before a production build can start.");
 const svg = path.resolve(svgArg);
 const contract = path.resolve(contractArg);
-const profile = path.resolve(option("--profile", "profiles/web-svg-waapi.json"));
+const profile = path.resolve(profileArg);
 const outDir = path.resolve(option("--out", "production-package"));
-if (!fs.existsSync(svg)) block("ASSET_NOT_FOUND", `SVG not found: ${svg}`);
-if (!fs.existsSync(contract) || fs.statSync(contract).isDirectory()) block("NEEDS_PRODUCT_MODEL", `Contract not found: ${contract}`);
-if (!fs.existsSync(profile) || fs.statSync(profile).isDirectory()) block("RUNTIME_UNSUPPORTED", `Platform profile not found: ${profile}`);
-
+if (!fs.existsSync(svg) || !fs.statSync(svg).isFile()) block("ASSET_NOT_FOUND", `SVG not found: ${svg}`);
+if (!fs.existsSync(contract) || !fs.statSync(contract).isFile()) block("CONTRACT_NOT_FOUND", `Contract not found: ${contract}`);
+if (!fs.existsSync(profile) || !fs.statSync(profile).isFile()) block("PROFILE_NOT_FOUND", `Platform profile not found: ${profile}`);
 const tempDir = path.resolve(".motion-build", path.basename(outDir));
 fs.rmSync(tempDir, { recursive: true, force: true });
 fs.mkdirSync(tempDir, { recursive: true });
@@ -40,13 +32,8 @@ const preflightReport = path.join(tempDir, "preflight.json");
 const normalized = path.join(tempDir, "normalized.svg");
 const normalizeReport = path.join(tempDir, "normalize.json");
 let contractData;
-try {
-  contractData = readJson(contract);
-} catch (error) {
-  block("CONTRACT_INVALID", error.message);
-}
+try { contractData = readJson(contract); } catch (error) { block("CONTRACT_INVALID_JSON", error.message); }
 const prefix = contractData.implementation?.asset_id_prefix ?? contractData.id;
-
 run("asset-preflight.mjs", [svg, "--profile", profile, "--mode", "build", "--out", preflightReport]);
 run("validate-contract.mjs", [contract, "--profile", profile, "--out", path.join(tempDir, "contract-validation.json")]);
 run("svg-normalizer.mjs", [svg, "--out", normalized, "--id-prefix", prefix, "--report", normalizeReport]);
