@@ -4,6 +4,7 @@ import path from "node:path";
 import process from "node:process";
 import crypto from "node:crypto";
 import { readJson, writeJson } from "./contract-lib.mjs";
+import { scanSvgStructure } from "./svg-structure.mjs";
 
 const args = process.argv.slice(2);
 const input = args[0];
@@ -35,7 +36,9 @@ const info = [];
 const block = (code, message, details = null) => errors.push({ code, message, details });
 const warn = (code, message, details = null) => warnings.push({ code, message, details });
 
-if (Buffer.byteLength(source, "utf8") > (profile.max_asset_bytes ?? Infinity)) block("ASSET_TOO_LARGE", `Asset exceeds ${profile.max_asset_bytes} bytes.`);
+if (Buffer.byteLength(source, "utf8") > (profile.max_asset_bytes ?? Infinity)) {
+  block("ASSET_TOO_LARGE", `Asset exceeds ${profile.max_asset_bytes} bytes.`);
+}
 if (/<!DOCTYPE/i.test(source) || /<!ENTITY/i.test(source)) block("XML_ENTITY_NOT_ALLOWED", "DOCTYPE/ENTITY declarations are not allowed.");
 const rootMatch = source.match(/<svg\b([^>]*)>/i);
 if (!rootMatch) block("SVG_ROOT_MISSING", "A root <svg> element is required.");
@@ -56,10 +59,14 @@ if (rootMatch) {
 const tags = [...source.matchAll(/<\/?\s*([A-Za-z][\w:-]*)\b/g)].map(m => m[1]);
 const uniqueTags = [...new Set(tags)];
 const blockedTags = new Set((profile.blocked_svg_elements ?? []).map(x => x.toLowerCase()));
-for (const tag of uniqueTags) if (blockedTags.has(tag.toLowerCase())) block("BLOCKED_SVG_ELEMENT", `Element <${tag}> is blocked by the platform profile.`, { tag });
+for (const tag of uniqueTags) {
+  if (blockedTags.has(tag.toLowerCase())) block("BLOCKED_SVG_ELEMENT", `Element <${tag}> is blocked by the platform profile.`, { tag });
+}
 if (Array.isArray(profile.allowed_svg_elements)) {
   const allowed = new Set(profile.allowed_svg_elements.map(x => x.toLowerCase()));
-  for (const tag of uniqueTags) if (!allowed.has(tag.toLowerCase()) && !blockedTags.has(tag.toLowerCase())) warn("UNLISTED_SVG_ELEMENT", `Element <${tag}> is not in the tested allowlist.`, { tag });
+  for (const tag of uniqueTags) {
+    if (!allowed.has(tag.toLowerCase()) && !blockedTags.has(tag.toLowerCase())) warn("UNLISTED_SVG_ELEMENT", `Element <${tag}> is not in the tested allowlist.`, { tag });
+  }
 }
 
 if (profile.allow_inline_event_handlers === false && /\son[a-z]+\s*=/i.test(source)) block("INLINE_EVENT_HANDLER", "Inline SVG event handlers are not allowed.");
@@ -77,11 +84,19 @@ const idCounts = ids.reduce((acc, id) => acc.set(id, (acc.get(id) ?? 0) + 1), ne
 const duplicateIds = [...idCounts.entries()].filter(([, count]) => count > 1).map(([id]) => id);
 if (duplicateIds.length) block("DUPLICATE_ID", "Duplicate SVG IDs are not allowed.", duplicateIds);
 
-const dataParts = [...source.matchAll(/\bdata-part\s*=\s*["']([^"']+)["']/gi)].map(m => m[1]);
+const structure = scanSvgStructure(source);
+const dataParts = structure.dataParts;
 const duplicateParts = [...new Set(dataParts.filter((p, i) => dataParts.indexOf(p) !== i))];
 if (duplicateParts.length) block("DUPLICATE_DATA_PART", "data-part names must be unique within one icon.", duplicateParts);
 if (mode === "build" && profile.require_semantic_parts_for_build && dataParts.length === 0) block("SEMANTIC_PARTS_REQUIRED", "Build mode requires at least one data-part annotation.");
 if (mode === "intake" && dataParts.length === 0) warn("SEMANTIC_ANNOTATION_REQUIRED", "No data-part annotations found; semantic actors must be identified before compilation.");
+if (mode === "build" && structure.unownedVisibleGeometry.length) {
+  block(
+    "UNOWNED_VISIBLE_GEOMETRY",
+    "Every renderable SVG primitive must belong to a data-part before production compilation.",
+    { count: structure.unownedVisibleGeometry.length, examples: structure.unownedVisibleGeometry.slice(0, 12) }
+  );
+}
 
 const referencedIds = new Set();
 for (const value of [...hrefs, ...urls]) if (value.startsWith("#")) referencedIds.add(value.slice(1));
@@ -98,7 +113,15 @@ const report = {
   status: errors.length ? "blocked" : warnings.length ? "buildable-with-warnings" : "buildable",
   buildable: errors.length === 0,
   normalization_required: !/\bdata-motion-icon(?:\s|=|>)/i.test(rootMatch?.[0] ?? "") || ids.length > 0,
-  summary: { bytes: Buffer.byteLength(source, "utf8"), viewBox, elements: uniqueTags, ids, data_parts: dataParts },
+  summary: {
+    bytes: Buffer.byteLength(source, "utf8"),
+    viewBox,
+    elements: uniqueTags,
+    ids,
+    data_parts: dataParts,
+    primitive_counts_by_part: structure.primitiveCountsByPart,
+    unowned_visible_geometry: structure.unownedVisibleGeometry.length
+  },
   errors,
   warnings,
   info

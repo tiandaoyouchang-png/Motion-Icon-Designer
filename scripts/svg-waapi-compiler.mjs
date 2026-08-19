@@ -4,6 +4,7 @@ import path from "node:path";
 import process from "node:process";
 import crypto from "node:crypto";
 import { readJson, validateContract, writeJson } from "./contract-lib.mjs";
+import { scanSvgStructure } from "./svg-structure.mjs";
 
 const args = process.argv.slice(2);
 if (!args.length || args.includes("--help")) {
@@ -25,11 +26,15 @@ if (!validation.ok) { for (const item of validation.errors) console.error(`ERROR
 
 const svg = fs.readFileSync(svgPath, "utf8");
 if (!/\bdata-motion-icon(?:\s|=|>)/i.test(svg)) throw new Error("Normalized SVG must have data-motion-icon on the root.");
-const parts = [...svg.matchAll(/\bdata-part\s*=\s*["']([^"']+)["']/gi)].map(m => m[1]);
+const structure = scanSvgStructure(svg);
+const parts = structure.dataParts;
 const partSet = new Set(parts);
 const requiredParts = new Set([...(contract.geometry.stable_parts ?? []), ...(contract.geometry.actors ?? []), ...Object.values(contract.visual_states ?? {}).flatMap(state => Object.keys(state.parts ?? {})), ...(contract.transitions ?? []).flatMap(t => (t.tracks ?? []).map(track => track.part))]);
 const missingParts = [...requiredParts].filter(name => !partSet.has(name));
 if (missingParts.length) { console.error(`ERROR CONTRACT_ASSET_PART_MISMATCH: missing data-part(s): ${missingParts.join(", ")}`); process.exit(1); }
+const undeclaredParts = [...new Set(parts)].filter(name => !requiredParts.has(name));
+if (undeclaredParts.length) { console.error(`ERROR UNDECLARED_ASSET_PART: data-part(s) not owned by the contract: ${undeclaredParts.join(", ")}`); process.exit(1); }
+if (structure.unownedVisibleGeometry.length) { console.error(`ERROR UNOWNED_VISIBLE_GEOMETRY: ${structure.unownedVisibleGeometry.length} renderable primitive(s) are not owned by data-part.`); process.exit(1); }
 
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(path.join(outDir, "screenshots"), { recursive: true });
@@ -44,7 +49,22 @@ const fixture = `<!doctype html>\n<meta charset="utf-8">\n<title>${contract.id} 
 fs.writeFileSync(path.join(outDir, "fixture.html"), fixture);
 
 const sha = value => crypto.createHash("sha256").update(value).digest("hex");
-const manifest = { schema: "motion-icon-production-package/v1", id: contract.id, version: contract.version, runtime: "svg-waapi", platform_profile: profile.id, files: { asset: "motion-icon.svg", controller: "controller.js", contract: "contract.json", profile: "platform-profile.json", fixture: "fixture.html", verification_report: "verify-report.json", verification_html: "verify-report.html", screenshots: "screenshots/" }, integrity: { asset_sha256: sha(svg), contract_sha256: sha(fs.readFileSync(contractPath)), controller_sha256: sha(runtimeSource) }, verification: { status: "NOT_RUN" } };
+const manifest = {
+  schema: "motion-icon-production-package/v1",
+  id: contract.id,
+  version: contract.version,
+  runtime: "svg-waapi",
+  platform_profile: profile.id,
+  files: { asset: "motion-icon.svg", controller: "controller.js", contract: "contract.json", profile: "platform-profile.json", fixture: "fixture.html", verification_report: "verify-report.json", verification_html: "verify-report.html", screenshots: "screenshots/" },
+  integrity: {
+    asset_sha256: sha(svg),
+    contract_sha256: sha(fs.readFileSync(contractPath)),
+    controller_sha256: sha(runtimeSource),
+    profile_sha256: sha(fs.readFileSync(profilePath)),
+    fixture_sha256: sha(fixture)
+  },
+  verification: { status: "NOT_RUN" }
+};
 writeJson(path.join(outDir, "manifest.json"), manifest);
 
 const readme = `# ${contract.id} 量产动态图标包\n\n运行时：\`svg-waapi\`\n\n平台配置：\`${profile.id}\`\n\n## 集成\n\n1. 将 \`motion-icon.svg\` 内联到页面。\n2. 加载 \`controller.js\`。\n3. 使用 \`MotionIconRuntime.create(root, contract)\` 创建控制器。\n4. 业务层调用 \`setState(productState)\` 或 \`beginTransition(targetState)\`，不要直接请求动画片段。\n\n## 验证\n\n在仓库根目录运行：\n\n\`\`\`bash\nnode scripts/verify-motion-icon.mjs <package-directory> --out <package-directory>\n\`\`\`\n\n只有 \`manifest.json > verification.status\` 为 \`PASS\` 时才应进入集成候选。\n`;

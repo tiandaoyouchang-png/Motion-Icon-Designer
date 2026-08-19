@@ -70,7 +70,7 @@ try {
   result("Package files", required.every(name => fs.existsSync(path.join(outDir, name))), required.join(", "));
   const manifest = readJson(path.join(outDir, "manifest.json"));
   result("Manifest starts unverified", manifest.verification?.status === "NOT_RUN");
-  result("Manifest integrity", Boolean(manifest.integrity?.asset_sha256 && manifest.integrity?.contract_sha256 && manifest.integrity?.controller_sha256));
+  result("Manifest integrity", Boolean(manifest.integrity?.asset_sha256 && manifest.integrity?.contract_sha256 && manifest.integrity?.controller_sha256 && manifest.integrity?.profile_sha256 && manifest.integrity?.fixture_sha256));
 
   const mismatch = structuredClone(readJson(contract));
   mismatch.geometry.actors.push("missing-part");
@@ -78,7 +78,43 @@ try {
   mismatch.visual_states.unlocked.parts["missing-part"] = { opacity: 1 };
   const mismatchPath = path.join(temp, "mismatch.json");
   writeJson(mismatchPath, mismatch);
-  result("Contract/asset mismatch blocks compiler", run("svg-waapi-compiler.mjs", ["--svg", normalized, "--contract", mismatchPath, "--profile", profile, "--out", path.join(temp, "mismatch-package")], 1).pass);
+  result("Contract/asset mismatch blocks compiler", run("svg-waapi-compiler.mjs", ["--svg", normalized, "--contract", mismatchPath, "--profile", profile, "--out", path.join(temp, "mismatch-package")], 2).pass);
+
+  const guideLeak = path.join(temp, "guide-leak.svg");
+  fs.writeFileSync(guideLeak, '<svg viewBox="0 0 24 24"><path data-part="glyph" d="M4 12h16" stroke="black"/><rect x="1" y="1" width="22" height="22" fill="none" stroke="red"/></svg>\n');
+  const guideReport = path.join(temp, "guide-leak.json");
+  result("Unowned visible geometry blocks preflight", run("asset-preflight.mjs", [guideLeak, "--profile", profile, "--mode", "build", "--out", guideReport], 2).pass);
+  const guideData = readJson(guideReport);
+  result("Unowned geometry blocker recorded", guideData.errors.some(e => e.code === "UNOWNED_VISIBLE_GEOMETRY"));
+
+  const extraPartSvg = path.join(temp, "extra-part.svg");
+  fs.writeFileSync(extraPartSvg, '<svg data-motion-icon viewBox="0 0 24 24"><g data-part="body"><rect x="4" y="8" width="16" height="12"/></g><path data-part="shackle" d="M8 10V7a4 4 0 0 1 8 0v3"/><circle data-part="debug-dot" cx="2" cy="2" r="1"/></svg>\n');
+  result("Undeclared semantic part blocks compiler", run("svg-waapi-compiler.mjs", ["--svg", extraPartSvg, "--contract", contract, "--profile", profile, "--out", path.join(temp, "extra-part-package")], 2).pass);
+
+  const missingContract = spawnSync(process.execPath, [path.join(root, "scripts", "build-motion-icon.mjs"), "--svg", source, "--profile", profile, "--out", path.join(temp, "missing-contract-package")], { cwd: root, encoding: "utf8" });
+  result("Missing product model blocks structurally", missingContract.status === 2 && missingContract.stderr.includes('"code":"NEEDS_PRODUCT_MODEL"'));
+
+  const unqualified = structuredClone(readJson(contract));
+  unqualified.product.input_model = "continuous";
+  const unqualifiedPath = path.join(temp, "unqualified.json");
+  writeJson(unqualifiedPath, unqualified);
+  result("Unqualified continuous input fails closed", run("validate-contract.mjs", [unqualifiedPath, "--profile", profile], 1).pass);
+
+  const collision = structuredClone(readJson(contract));
+  collision.state.allowed = [1, "1"];
+  collision.state.initial = 1;
+  collision.visual_states = { "1": collision.visual_states.locked };
+  collision.transitions = [];
+  collision.verification.scenarios = [];
+  const collisionPath = path.join(temp, "collision.json");
+  writeJson(collisionPath, collision);
+  result("State string-key collision blocks validation", run("validate-contract.mjs", [collisionPath, "--profile", profile], 1).pass);
+
+  const unknownProperty = structuredClone(readJson(contract));
+  unknownProperty.product.unexpected_field = true;
+  const unknownPropertyPath = path.join(temp, "unknown-property.json");
+  writeJson(unknownPropertyPath, unknownProperty);
+  result("Schema-style additional properties fail closed", run("validate-contract.mjs", [unknownPropertyPath, "--profile", profile], 1).pass);
 
   const schema = readJson(path.join(root, "schemas/motion-icon-contract.schema.json"));
   result("Schema declares 2020-12", schema.$schema === "https://json-schema.org/draft/2020-12/schema");
@@ -90,4 +126,4 @@ if (failures) {
   console.error(`\n${failures} self-test(s) failed.`);
   process.exit(1);
 }
-console.log("\nPASS: RC2 static/build self-test suite");
+console.log("\nPASS: RC3 static/build self-test suite");

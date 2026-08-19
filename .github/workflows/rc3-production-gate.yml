@@ -1,4 +1,4 @@
-name: RC2 Production Gate
+name: RC3 Production Gate
 
 on:
   push:
@@ -12,20 +12,15 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-
       - name: Install dependencies
         run: npm install --no-audit --no-fund
-
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-
-      - name: Run RC2 production gate
-        run: npm run test:release
-
+      - name: Run RC3 production gate
+        run: npm run test:production
       - name: Upload verification evidence
         if: always()
         uses: actions/upload-artifact@v4
