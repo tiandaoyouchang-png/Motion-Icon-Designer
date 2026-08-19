@@ -1,25 +1,24 @@
 {
-  "id": "production-lock",
-  "version": "1.0.0-rc3",
-  "product": { "input_model": "boolean", "representation_role": "status", "source_of_truth": "application-state", "safety_relevant": false },
-  "state": { "initial": "locked", "allowed": ["locked", "unlocked"] },
-  "behavior": { "reactivity": "transition", "interrupt_policy": "retarget", "loop_policy": "never" },
-  "semantics": { "verb": "shackle opens and closes", "primary_family": "pivot-hinge", "secondary_family": null, "no_internal_motion_reason": null },
-  "geometry": { "stable_parts": ["body"], "actors": ["shackle"], "pivot": "shackle-right-base", "emitter": null, "seam": "shackle-body" },
-  "motion": { "personality": "controlled-technical", "default_duration_ms": 180, "default_easing": "cubic-bezier(0.2, 0, 0, 1)", "overshoot_percent": 0 },
-  "visual_states": {
-    "locked": { "parts": { "body": { "opacity": 1 }, "shackle": { "opacity": 1, "transform": "rotate(0deg) translateX(0px)", "transformOrigin": "16px 10px" } } },
-    "unlocked": { "parts": { "body": { "opacity": 1 }, "shackle": { "opacity": 1, "transform": "rotate(32deg) translateX(1.5px)", "transformOrigin": "16px 10px" } } }
+  "id":"production-lock","version":"1.0.0-rc4",
+  "product":{"input_model":"boolean","representation_role":"status","source_of_truth":"application-state","safety_relevant":false},
+  "state":{"initial":"locked","allowed":["locked","unlocked"]},
+  "behavior":{"reactivity":"transition","interrupt_policy":"retarget","loop_policy":"never"},
+  "semantics":{"verb":"shackle opens and closes","primary_family":"pivot-hinge","secondary_family":null,"no_internal_motion_reason":null},
+  "geometry":{"stable_parts":["body"],"actors":["shackle"],"pivot":"shackle-right-base","emitter":null,"seam":"shackle-body"},
+  "motion":{"personality":"controlled-technical","default_duration_ms":180,"default_easing":"cubic-bezier(0.2, 0, 0, 1)","overshoot_percent":0},
+  "visual_states":{
+    "locked":{"parts":{"body":{"opacity":1},"shackle":{"opacity":1,"transform":"rotate(0deg) translateX(0px)","transformOrigin":"16px 10px"}}},
+    "unlocked":{"parts":{"body":{"opacity":1},"shackle":{"opacity":1,"transform":"rotate(32deg) translateX(1.5px)","transformOrigin":"16px 10px"}}}
   },
-  "transitions": [
-    { "from": "locked", "to": "unlocked", "duration_ms": 180, "easing": "cubic-bezier(0.2, 0, 0, 1)", "tracks": [{ "part": "shackle", "keyframes": [{ "offset": 0, "transform": "rotate(0deg) translateX(0px)" }, { "offset": 1, "transform": "rotate(32deg) translateX(1.5px)" }] }] },
-    { "from": "unlocked", "to": "locked", "duration_ms": 160, "easing": "cubic-bezier(0.4, 0, 0.6, 1)", "tracks": [{ "part": "shackle", "keyframes": [{ "offset": 0, "transform": "rotate(32deg) translateX(1.5px)" }, { "offset": 1, "transform": "rotate(0deg) translateX(0px)" }] }] }
+  "transitions":[
+    {"from":"locked","to":"unlocked","duration_ms":180,"easing":"cubic-bezier(0.2, 0, 0, 1)","tracks":[{"part":"shackle","keyframes":[{"offset":0,"transform":"rotate(0deg) translateX(0px)"},{"offset":1,"transform":"rotate(32deg) translateX(1.5px)"}]}]},
+    {"from":"unlocked","to":"locked","duration_ms":160,"easing":"cubic-bezier(0.4, 0, 0.6, 1)","tracks":[{"part":"shackle","keyframes":[{"offset":0,"transform":"rotate(32deg) translateX(1.5px)"},{"offset":1,"transform":"rotate(0deg) translateX(0px)"}]}]}
   ],
-  "landing": { "type": "target-state", "persistent_visual": "Shackle exactly matches the requested locked or unlocked state." },
-  "accessibility": { "reduced_motion": "direct-state-establish", "meaning_preserved": true },
-  "implementation": { "runtime": "svg-waapi", "platform_profile": "web-svg-waapi", "asset_id_prefix": "production-lock" },
-  "verification": { "stable_part_tolerance_px": 0.5, "scenarios": [
-    { "name": "retarget-open-back-to-locked", "start": "locked", "first_target": "unlocked", "interrupt_at": 0.5, "second_target": "locked", "expected": "locked" },
-    { "name": "retarget-close-back-to-unlocked", "start": "unlocked", "first_target": "locked", "interrupt_at": 0.5, "second_target": "unlocked", "expected": "unlocked" }
-  ] }
+  "landing":{"type":"target-state","persistent_visual":"Shackle exactly matches the requested locked or unlocked state."},
+  "accessibility":{"reduced_motion":"direct-state-establish","meaning_preserved":true},
+  "implementation":{"runtime":"svg-waapi","platform_profile":"web-svg-waapi","asset_id_prefix":"production-lock"},
+  "verification":{"stable_part_tolerance_px":0.5,"scenarios":[
+    {"name":"retarget-open-back-to-locked","start":"locked","first_target":"unlocked","interrupt_at":0.5,"second_target":"locked","expected":"locked"},
+    {"name":"retarget-close-back-to-unlocked","start":"unlocked","first_target":"locked","interrupt_at":0.5,"second_target":"unlocked","expected":"unlocked"}
+  ]}
 }
