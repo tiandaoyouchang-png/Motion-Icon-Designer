@@ -1,0 +1,28 @@
+{
+  "id":"production-seat-heating","version":"1.0.0-rc4",
+  "product":{"input_model":"discrete","representation_role":"value","source_of_truth":"climate-seat-state","safety_relevant":false},
+  "state":{"initial":0,"allowed":[0,1,2,3]},
+  "behavior":{"reactivity":"transition","interrupt_policy":"retarget","loop_policy":"never"},
+  "semantics":{"verb":"heat level establishes upward","primary_family":"emit-step","secondary_family":null,"no_internal_motion_reason":null},
+  "geometry":{"stable_parts":["seat"],"actors":["wave1","wave2","wave3"],"pivot":null,"emitter":"seat-surface","seam":null},
+  "motion":{"personality":"controlled-technical","default_duration_ms":180,"default_easing":"cubic-bezier(0.2, 0, 0, 1)","overshoot_percent":0},
+  "visual_states":{
+    "0":{"parts":{"seat":{"opacity":1},"wave1":{"opacity":0},"wave2":{"opacity":0},"wave3":{"opacity":0}}},
+    "1":{"parts":{"seat":{"opacity":1},"wave1":{"opacity":1},"wave2":{"opacity":0},"wave3":{"opacity":0}}},
+    "2":{"parts":{"seat":{"opacity":1},"wave1":{"opacity":1},"wave2":{"opacity":1},"wave3":{"opacity":0}}},
+    "3":{"parts":{"seat":{"opacity":1},"wave1":{"opacity":1},"wave2":{"opacity":1},"wave3":{"opacity":1}}}
+  },
+  "transitions":[
+    {"from":0,"to":3,"tracks":[{"part":"wave1","keyframes":[{"offset":0,"opacity":0},{"offset":1,"opacity":1}]},{"part":"wave2","keyframes":[{"offset":0,"opacity":0},{"offset":1,"opacity":1}]},{"part":"wave3","keyframes":[{"offset":0,"opacity":0},{"offset":1,"opacity":1}]}]},
+    {"from":3,"to":1,"tracks":[{"part":"wave2","keyframes":[{"offset":0,"opacity":1},{"offset":1,"opacity":0}]},{"part":"wave3","keyframes":[{"offset":0,"opacity":1},{"offset":1,"opacity":0}]}]},
+    {"from":3,"to":0,"tracks":[{"part":"wave1","keyframes":[{"offset":0,"opacity":1},{"offset":1,"opacity":0}]},{"part":"wave2","keyframes":[{"offset":0,"opacity":1},{"offset":1,"opacity":0}]},{"part":"wave3","keyframes":[{"offset":0,"opacity":1},{"offset":1,"opacity":0}]}]},
+    {"from":0,"to":2,"tracks":[{"part":"wave1","keyframes":[{"offset":0,"opacity":0},{"offset":1,"opacity":1}]},{"part":"wave2","keyframes":[{"offset":0,"opacity":0},{"offset":1,"opacity":1}]}]}
+  ],
+  "landing":{"type":"target-state","persistent_visual":"Heat indicators persist at the requested 0–3 product level."},
+  "accessibility":{"reduced_motion":"direct-state-establish","meaning_preserved":true},
+  "implementation":{"runtime":"svg-waapi","platform_profile":"web-svg-waapi","asset_id_prefix":"production-seat-heating"},
+  "verification":{"stable_part_tolerance_px":0.5,"scenarios":[
+    {"name":"retarget-3-to-1","start":0,"first_target":3,"interrupt_at":0.5,"second_target":1,"expected":1},
+    {"name":"retarget-0-to-2","start":3,"first_target":0,"interrupt_at":0.5,"second_target":2,"expected":2}
+  ]}
+}
