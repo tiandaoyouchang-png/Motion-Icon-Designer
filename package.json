@@ -1,11 +1,13 @@
 {
   "name": "motion-icon-designer",
-  "version": "1.0.0-rc3",
+  "version": "1.0.0-rc4",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-    "test:static": "node scripts/self-test.mjs",
+    "test:static": "node scripts/self-test.mjs && npm run test:docs",
     "build:production-lock": "node scripts/build-motion-icon.mjs --svg fixtures/production-lock/source.svg --contract fixtures/production-lock/contract.json --profile profiles/web-svg-waapi.json --out production-package/production-lock",
     "verify:production-lock": "node scripts/verify-motion-icon.mjs production-package/production-lock --out production-package/production-lock",
     "verify:seat": "node scripts/verify-motion-icon.mjs fixtures/seat-heating/index.html --out motion-verify/seat-heating",
@@ -13,8 +15,16 @@
     "verify:wifi": "node scripts/verify-motion-icon.mjs fixtures/wifi/index.html --out motion-verify/wifi",
     "verify:media": "node scripts/verify-motion-icon.mjs fixtures/play-pause/index.html --out motion-verify/play-pause",
     "verify:legacy": "npm run verify:seat && npm run verify:lock && npm run verify:wifi && npm run verify:media",
+    "test:production": "npm run test:static && npm run test:production-fixtures && npm run test:adversarial && npm run verify:legacy",
     "test:adversarial": "node scripts/production-adversarial-test.mjs",
-    "test:production": "npm run test:static && npm run build:production-lock && npm run test:adversarial && npm run verify:legacy"
+    "docs:cases": "node scripts/generate-case-catalog.mjs --write",
+    "test:docs": "node scripts/generate-case-catalog.mjs --check && node scripts/release-consistency.mjs",
+    "build:production-seat": "node scripts/build-motion-icon.mjs --svg fixtures/production-seat-heating/source.svg --contract fixtures/production-seat-heating/contract.json --profile profiles/web-svg-waapi.json --out production-package/production-seat-heating",
+    "build:production-wifi": "node scripts/build-motion-icon.mjs --svg fixtures/production-wifi/source.svg --contract fixtures/production-wifi/contract.json --profile profiles/web-svg-waapi.json --out production-package/production-wifi",
+    "build:production-media": "node scripts/build-motion-icon.mjs --svg fixtures/production-play-pause/source.svg --contract fixtures/production-play-pause/contract.json --profile profiles/web-svg-waapi.json --out production-package/production-play-pause",
+    "test:production-fixtures": "npm run build:production-lock && npm run build:production-seat && npm run build:production-wifi && npm run build:production-media"
   },
-  "devDependencies": { "playwright": "1.62.1" }
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
 }
