@@ -9,19 +9,8 @@ import { readJson, writeJson } from "./contract-lib.mjs";
 const root = path.resolve(new URL("..", import.meta.url).pathname);
 const temp = fs.mkdtempSync(path.join(os.tmpdir(), "motion-icon-self-test-"));
 let failures = 0;
-
-function result(name, pass, details = "") {
-  console.log(`${pass ? "PASS" : "FAIL"}: ${name}${details ? ` — ${details}` : ""}`);
-  if (!pass) failures += 1;
-}
-function run(script, args = [], expected = 0) {
-  const proc = spawnSync(process.execPath, [path.join(root, "scripts", script), ...args], { cwd: root, encoding: "utf8" });
-  if (proc.status !== expected) {
-    console.error(proc.stdout);
-    console.error(proc.stderr);
-  }
-  return { pass: proc.status === expected, proc };
-}
+function result(name, pass, details = "") { console.log(`${pass ? "PASS" : "FAIL"}: ${name}${details ? ` — ${details}` : ""}`); if (!pass) failures += 1; }
+function run(script, args = [], expected = 0) { const proc = spawnSync(process.execPath, [path.join(root, "scripts", script), ...args], { cwd: root, encoding: "utf8" }); if (proc.status !== expected) { console.error(proc.stdout); console.error(proc.stderr); } return { pass: proc.status === expected, proc }; }
 
 try {
   const scriptFiles = [];
@@ -32,16 +21,12 @@ try {
     }
   }
   let syntaxOk = true;
-  for (const file of scriptFiles) {
-    const proc = spawnSync(process.execPath, ["--check", file], { encoding: "utf8" });
-    if (proc.status !== 0) { syntaxOk = false; console.error(proc.stderr); }
-  }
+  for (const file of scriptFiles) { const proc = spawnSync(process.execPath, ["--check", file], { encoding: "utf8" }); if (proc.status !== 0) { syntaxOk = false; console.error(proc.stderr); } }
   result("JavaScript syntax", syntaxOk, `${scriptFiles.length} files`);
 
   const source = path.join(root, "fixtures/production-lock/source.svg");
   const contract = path.join(root, "fixtures/production-lock/contract.json");
   const profile = path.join(root, "profiles/web-svg-waapi.json");
-
   result("Safe SVG preflight", run("asset-preflight.mjs", [source, "--profile", profile, "--mode", "build", "--out", path.join(temp, "preflight.json")]).pass);
   result("Contract validation", run("validate-contract.mjs", [contract, "--profile", profile, "--out", path.join(temp, "contract-validation.json")]).pass);
 
@@ -121,9 +106,5 @@ try {
 } finally {
   fs.rmSync(temp, { recursive: true, force: true });
 }
-
-if (failures) {
-  console.error(`\n${failures} self-test(s) failed.`);
-  process.exit(1);
-}
-console.log("\nPASS: RC3 static/build self-test suite");
+if (failures) { console.error(`\n${failures} self-test(s) failed.`); process.exit(1); }
+console.log("\nPASS: RC4 static/build self-test suite");
