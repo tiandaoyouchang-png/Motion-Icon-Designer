@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="240" height="240" role="img" aria-label="Seat heating level motion preview">
+  <style>
+    .seat,.wave{fill:none;stroke:#111;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.w1{animation:w1 3s ease-in-out infinite}.w2{animation:w2 3s ease-in-out infinite}.w3{animation:w3 3s ease-in-out infinite}
+    @keyframes w1{0%,10%,90%,100%{opacity:0}24%,76%{opacity:1}}
+    @keyframes w2{0%,24%,86%,100%{opacity:0}38%,72%{opacity:1}}
+    @keyframes w3{0%,38%,76%,100%{opacity:0}52%,66%{opacity:1}}
+    @media (prefers-reduced-motion:reduce){.w1,.w2,.w3{animation:none;opacity:1}}
+  </style>
+  <g class="seat"><path d="M8 4v7c0 2 1 3 3 3h5v5H9c-3 0-5-2-5-5V8"/></g>
+  <path class="wave w1" d="M12 12c-1-1 1-2 0-3s1-2 0-3"/><path class="wave w2" d="M15 12c-1-1 1-2 0-3s1-2 0-3"/><path class="wave w3" d="M18 12c-1-1 1-2 0-3s1-2 0-3"/>
+</svg>
