@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="240" height="240" role="img" aria-label="Wi-Fi signal level motion preview">
+  <style>
+    .band{fill:none;stroke:#111;stroke-width:2;stroke-linecap:round}.b1{animation:b1 3s ease-in-out infinite}.b2{animation:b2 3s ease-in-out infinite}.b3{animation:b3 3s ease-in-out infinite}
+    @keyframes b1{0%,10%,90%,100%{opacity:0}24%,76%{opacity:1}}
+    @keyframes b2{0%,24%,86%,100%{opacity:0}38%,72%{opacity:1}}
+    @keyframes b3{0%,38%,76%,100%{opacity:0}52%,66%{opacity:1}}
+    @media (prefers-reduced-motion:reduce){.b1,.b2,.b3{animation:none;opacity:1}}
+  </style>
+  <path class="band b3" d="M4 9a12 12 0 0 1 16 0"/><path class="band b2" d="M7 12a8 8 0 0 1 10 0"/><path class="band b1" d="M10 15a4 4 0 0 1 4 0"/><circle cx="12" cy="18" r="1" fill="#111"/>
+</svg>
