@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="240" height="240" role="img" aria-label="Play pause motion preview">
+  <style>
+    .play{animation:play 2.2s cubic-bezier(.2,0,0,1) infinite}.pause{animation:pause 2.2s cubic-bezier(.2,0,0,1) infinite}
+    @keyframes play{0%,20%{opacity:1}42%,62%{opacity:0}84%,100%{opacity:1}}
+    @keyframes pause{0%,20%{opacity:0}42%,62%{opacity:1}84%,100%{opacity:0}}
+    @media (prefers-reduced-motion:reduce){.play{animation:none;opacity:1}.pause{animation:none;opacity:0}}
+  </style>
+  <path class="play" d="M8 5l11 7-11 7z" fill="#111"/>
+  <g class="pause" fill="#111"><rect x="7" y="5" width="4" height="14" rx="1"/><rect x="13" y="5" width="4" height="14" rx="1"/></g>
+</svg>
