@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" data-motion-icon="">
+  <g data-part="seat" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4v7c0 2 1 3 3 3h5v5H9c-3 0-5-2-5-5V8"/></g>
+  <path data-part="wave1" d="M12 12c-1-1 1-2 0-3s1-2 0-3" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+  <path data-part="wave2" d="M15 12c-1-1 1-2 0-3s1-2 0-3" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+  <path data-part="wave3" d="M18 12c-1-1 1-2 0-3s1-2 0-3" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+</svg>
